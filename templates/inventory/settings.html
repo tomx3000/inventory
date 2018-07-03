@@ -1,0 +1,622 @@
+
+
+{%extends 'home/base.html'%}
+
+{%block style%}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style type="text/css">
+	[v-cloak]{
+		display: none;
+	}
+</style>
+{%endblock%}
+
+{%block content%}
+<div id="settings">
+	<h1 v-cloak>[[settings]]</h1>
+
+<div class="list-group container">
+  <div href="#" class="list-group-item list-group-item-action flex-column align-items-start " style="margin-top: 20px">
+    <div class="d-flex w-100 justify-content-between">
+      <h5 class="mb-1">Company</h5>
+      <small><button v-on:click="checkSubmitCompanyForm" type="submit" class="btn btn-dark">Update</button></small>
+    </div>
+    <p class="mb-1">
+    	<form >
+    	{%csrf_token%}
+  <div class="form-row align-items-center">
+    <div class="col-sm-3 my-1">
+      <label class="sr-only" for="inlineFormInputCopanyName">CompanyName</label>
+      <input type="text" class="form-control" id="inlineFormInputCompanyName" placeholder="Name"  v-model="companyname">
+    </div>
+    <div class="col-sm-3 my-1">
+      <label class="sr-only" for="inlineFormInputGroupCompanyEmail">Email</label>
+      <div class="input-group">
+        <div class="input-group-prepend">
+          <div class="input-group-text">@</div>
+        </div>
+        <input type="text" class="form-control" id="inlineFormInputGroupCompanyEmail" placeholder="Email"  v-model="companyemail">
+      </div>
+    </div>
+    <div class="col-sm-3 my-1">
+      <label class="sr-only" for="inlineFormInputCompanyPhone">Phone</label>
+      <input type="text" class="form-control" id="inlineFormInputCompanyPhone" placeholder="Phone"  v-model="companyphone">
+    </div>
+    <div class="col-sm-3 my-1">
+      <label class="sr-only" for="inlineFormInputCompanyAddress">Address</label>
+      <input type="text" class="form-control" id="inlineFormInputCompanyAddress" placeholder="Address"  v-model="companyaddress">
+    </div>
+    
+  </div>
+</form>
+
+    </p>
+
+   <small class="text-muted">
+    	  <ul class="list-group">
+     
+   <li class="list-group-item d-flex justify-content-between lh-condensed" v-for="comp in company" v-cloak v-on:dblclick="editCompany(comp.id,comp.company_name,comp.company_address,comp.company_email,comp.company_phone)">
+        <div>
+        <h4  class="my-0" v-cloak>  [[comp.company_name]] </h4>
+        <small class="text-muted" v-cloak> [[comp.company_phone]] </small>
+      </div>
+      <div>
+      <h4 class="my-0" v-cloak> [[comp.company_email]] </h4>
+      <small class="text-muted" v-cloak> [[comp.company_address]] </small>
+        
+      </div>
+      
+      
+  </li>
+
+</ul>
+    </small>
+      
+      
+  </li>
+
+</ul>
+
+  </div>
+  <div href="#" class="list-group-item list-group-item-action flex-column align-items-start" style="margin-top: 20px">
+    <div class="d-flex w-100 justify-content-between">
+      <h5 class="mb-1">Store</h5>
+      <small class="text-muted">
+      <button v-on:click="checkSubmitStoreForm" type="submit" v-cloak class="btn btn-dark">[[addstorebutton]]</button></small>
+    </div>
+    <p class="mb-1">    	
+    <form>
+  <div class="form-row align-items-center">
+    <div class="col-sm-3 my-1">
+      <label class="sr-only" for="inlineFormStoreName">Name</label>
+      <input type="text" class="form-control" id="inlineFormInputStoreName" placeholder="Name" v-model="storename">
+    </div>
+    <div class="col-sm-3 my-1">
+      <label class="sr-only" for="inlineFormInputGroupStoreEmail">Email</label>
+      <div class="input-group">
+        <div class="input-group-prepend">
+          <div class="input-group-text">@</div>
+        </div>
+        <input type="text" class="form-control" id="inlineFormInputGroupStoreEmail" placeholder="Email" v-model="storeemail">
+      </div>
+    </div>
+    <div class="col-sm-3 my-1">
+      <label class="sr-only" for="inlineFormStorePhone">Phone</label>
+      <input type="text" class="form-control" id="inlineFormInputStorePhone" placeholder="Phone" v-model="storephone">
+    </div>
+    <div class="col-sm-3 my-1">
+      <label class="sr-only" for="inlineFormInputStoreAddress">Address</label>
+      <input type="text" class="form-control" id="inlineFormInputStoreAddress" placeholder="Address" v-model="storeaddress">
+    </div>
+    
+  </div>
+</form></p>
+    <small class="text-muted">
+    	  <ul class="list-group">
+     
+   <li class="list-group-item d-flex justify-content-between lh-condensed" v-cloak v-for="store in stores" v-on:dblclick="editStore
+(store.company,store.id,store.store_name,store.store_address,store.store_email,store.store_phone)">
+        <div>
+        <h4  class="my-0" v-cloak>  [[store.store_name]] </h4>
+        <small class="text-muted" v-cloak> [[store.store_phone]] </small>
+      </div>
+      <div>
+      <h4 class="my-0" v-cloak> [[store.store_email]] </h4>
+      <small class="text-muted" v-cloak> [[store.store_address]] </small>
+        
+      </div>
+      
+      <i id="trashitem" class="fa fa-trash fa-2x pull-right" v-on:click="deleteStore(store.id)"></i>
+  </li>
+
+</ul>
+    </small>
+  </div>
+  <div href="#" class="list-group-item list-group-item-action flex-column align-items-start" style="margin-top: 20px">
+    <div class="d-flex w-100 justify-content-between">
+      <h5 class="mb-1">Account</h5>
+      <small class="text-muted">
+      <button type="submit" class="btn btn-dark" v-on:click="checkSubmitAccountForm">Update</button></small>
+    </div>
+       <p class="mb-1">    	
+    <form>
+  <div class="form-row align-items-center">
+    <div class="col-sm-3 my-1">
+      <label class="sr-only" for="inlineFormInputAccountName">Name</label>
+      <input type="text" class="form-control" id="inlineFormInputAccountName" placeholder="Name" v-model="accountname">
+    </div>
+    <div class="col-sm-3 my-1">
+      <label class="sr-only" for="inlineFormInputGroupAccountBalance" >Balance</label>
+      <div class="input-group">
+        <div class="input-group-prepend">
+          <div class="input-group-text">#</div>
+        </div>
+        <input type="text" class="form-control" id="inlineFormInputGroupAccountBalance" placeholder="Balance" v-model="accountbalance">
+      </div>
+    </div>
+        
+  </div>
+</form></p>
+    <small class="text-muted">
+    	  <ul class="list-group">
+     
+   <li class="list-group-item d-flex justify-content-between lh-condensed" v-cloak v-for="acc in account" v-on:dblclick="editAccount(acc.account_user,acc.account_company,acc.id,acc.account_name,acc.account_amount)">
+        <div>
+        <h4  class="my-0" v-cloak >  [[acc.account_name]] </h4>
+<!--         <small class="text-muted" > Quantity </small>
+ -->      </div>
+      <div>
+      <h4 class="my-0" v-cloak> [[acc.account_amount]] </h4>
+<!--       <small class="text-muted"> Price </small>
+ -->        
+      </div>
+      
+      
+  </li>
+
+</ul>
+    </small>
+  </div>
+
+   <div href="#" class="list-group-item list-group-item-action flex-column align-items-start" style="margin-top: 20px">
+    <div class="d-flex w-100 justify-content-between">
+      <h5 class="mb-1">Employees</h5>
+      <small class="text-muted"><button type="submit" class="btn btn-dark" v-cloak v-on:click="checkSubmitEmployeeForm">[[addemployeebutton]]</button></small>
+    </div>
+    <p class="mb-1">    	
+    <form>
+  <div class="form-row align-items-center">
+    <div class="col-sm-3 my-1">
+      <label class="sr-only" for="inlineFormInputEmployeeFirstname">firstname</label>
+      <input type="text" class="form-control" id="inlineFormInputEmployeeFirstname" placeholder="firstname" v-model="employeefirstname">
+    </div>
+    <div class="col-sm-3 my-1">
+      <label class="sr-only" for="inlineFormInputGroupEmployeePhone">phone</label>        
+        <input type="text" class="form-control" id="inlineFormInputGroupEmployeePhone" placeholder="phone" v-model="employeephone">
+    </div>
+    <div class="col-sm-3 my-1">
+      <label class="sr-only" for="inlineFormInputGroupEmployeePosition">position</label>        
+        <input type="text" class="form-control" id="inlineFormInputGroupEmployeePosition" placeholder="position" v-model="employeeposition">
+    </div>
+    <div class="col-sm-3 my-1">
+      <label class="sr-only" for="inlineFormInputEmployeePrivilage">privillage</label>
+      <input type="text" class="form-control" id="inlineFormInputEmployeePrivilage" placeholder="privillage" v-model="employeeprivillage">
+    </div>
+    
+    
+  </div>
+</form></p>
+    <small class="text-muted">
+    	  <ul class="list-group">
+     
+   <li class="list-group-item d-flex justify-content-between lh-condensed" v-cloak v-for="employee in employees" v-on:dblclick="editEmployee(employee.id,employee.employee_firstname,employee.employee_privillage,employee.employee_position,employee.employee_phone,employee.company,employee.user)">
+        <div>
+        <h4  class="my-0" v-cloak>  [[employee.employee_firstname]] </h4>
+        <small class="text-muted" v-cloak> [[employee.employee_phone]] </small>
+      </div>
+      <div>
+      <h4 class="my-0" v-cloak> [[employee.employee_position]] </h4>
+      <small class="text-muted" v-cloak> [[employee.employee_privillage]] </small>
+        
+      </div>
+
+       <i id="trashitem" class="fa fa-trash fa-2x pull-right" v-on:click="deleteEmployee(employee.id)"></i>
+      
+      
+  </li>
+
+</ul>
+    </small>
+  </div>
+</div>
+
+
+
+</div>
+
+{%endblock%}
+
+{%block script%}
+  <script >
+new Vue({
+	delimiters: ['[[', ']]'],
+  el: '#settings',
+  data:{
+  	settings:"",
+  	editstore:false,
+  	editaccount:false,
+  	editemployee:false,
+  	companyname:'',
+  	companyaddress:'',
+  	companyemail:'',
+  	companyphone:'',
+  	storename:'',
+  	storeemail:'',
+  	storephone:'',
+  	storeaddress:'',
+  	accountname:'',
+  	accountbalance:'',
+  	employeeusername:'',
+  	emplpyeepassword:'',
+  	employeefirstname:'',
+  	employeephone:'',
+  	employees:'',
+  	employeeid:'',
+  	employeeuser:'',
+	employeeprivillage:'',
+	employeeposition:'',
+	addemployeebutton:'Add',
+  	stores:'',
+  	user:'',
+  	companyid:1,
+  	storeid:'',
+  	company:'',
+  	account:'',
+  	accountid:'',
+  	addstorebutton:'Add',
+  	storecompanyid:1,
+  	currentuserid:'',
+  	  },
+  methods:{
+  	// company control code
+  	checkSubmitCompanyForm:function(e){  
+      if(this.company){
+        // updating editing item
+        this.$http.put('/api/company/'+this.companyid+'/',{'company_name':this.companyname,'company_phone':this.companyphone,'company_address':this.companyaddress,'company_email':this.companyemail})
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+    	this.companyaddress='';
+    	this.companyemail='';
+    	this.companyname='';
+    	this.companyphone='';
+    	this.getCompany();
+
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+        
+      }  else{
+        this.$http.post('/api/company/',{'company_name':this.companyname,'company_phone':this.companyphone,'company_address':this.companyaddress,'company_email':this.companyemail})
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+         // this.getSales()
+        
+        	this.getCompany()
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+
+      }         
+        
+      e.preventDefault();
+    },
+    getCompany:function(){
+     this.$http.get('/api/company')
+     .then(function(response){
+      this.company=response.data.serial
+      this.currentuserid=response.data.userid
+      
+     })
+     .catch(function(error){
+      this.title='error getting items'
+     })
+    },
+    editCompany:function(id,name,address,email,phone){
+    	this.companyid=id;
+    	this.companyaddress=address;
+    	this.companyemail=email;
+    	this.companyname=name;
+    	this.companyphone=phone;
+    }
+    // end company control code
+    // the store control code
+    // ############################
+    // ############################
+    // ############################
+    // ############################
+    // ############################
+    // ############################
+    ,
+    checkSubmitStoreForm:function(e){  
+      if(this.editstore){
+        // updating editing item
+        this.$http.put('/api/store/'+this.storeid+'/',{'store_name':this.storename,'store_address':this.storeaddress,'store_phone':this.storephone,'store_email':this.storeemail,'company':this.storecompanyid})
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        this.storeid='';
+    	this.storename='';
+    	this.storeaddress='';
+    	this.storephone='';
+    	this.storeemail='';
+    	this.addstorebutton="Add";
+    	this.editstore=false;
+    	this.getStore();
+
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+        
+      }  else{
+        this.$http.post('/api/store/',{'store_name':this.storename,'store_address':this.storeaddress,'store_phone':this.storephone,'store_email':this.storeemail,'company':this.storecompanyid})
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        this.storeid='';
+    	this.storename='';
+    	this.storeaddress='';
+    	this.storephone='';
+    	this.storeemail='';
+    	this.getStore();
+        
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+
+      }         
+        
+      e.preventDefault();
+    },
+    getStore:function(){
+     this.$http.get('/api/store')
+     .then(function(response){
+      this.stores=response.data
+      
+     })
+     .catch(function(error){
+      this.title='error getting items'
+     })
+    },
+    editStore:function(companyid,id,name,address,email,phone){
+    	this.storecompanyid=companyid
+    	this.storeid=id;
+    	this.storeaddress=address;
+    	this.storeemail=email;
+    	this.storename=name;
+    	this.storephone=phone;
+    	this.addstorebutton="Edit";
+    	this.editstore=true;
+    },
+     deleteStore:function(id){
+    	 this.$http.delete('/api/store/'+id+'/')
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        this.getStore()
+        // alert('response')
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+
+    }
+    // end store control code
+    // begin account control code
+    // #########################
+	// #########################
+    // #########################
+    // #########################
+    // #########################
+    // #########################
+        ,
+    checkSubmitAccountForm:function(e){  
+      if(this.account){
+        // updating editing item
+        this.$http.put('/api/account/'+this.accountid+'/',{'account_name':this.accountname,'account_user':this.accountuser,'account_company':this.companyid,'account_amount':this.accountbalance})
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        this.accountuser='';
+    	this.accountname='';
+    	this.accountbalance='';
+    	this.getAccount();
+
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+        
+      }  else{
+        this.$http.post('/api/account/',{'account_name':this.accountname,'account_user':this.currentuserid,'account_company':this.companyid,'account_amount':this.accountbalance})
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        this.accountuser='';
+    	this.accountname='';
+    	this.accountbalance='';
+    	this.getAccount();
+        
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+
+      }         
+        
+      e.preventDefault();
+    },
+    getAccount:function(){
+     this.$http.get('/api/account')
+     .then(function(response){
+      this.account=response.data
+      user=0
+      id=0
+      $.each(this.account, function(key, value) {
+			
+				    user=value.account_user;
+				   id=value.id;
+
+				 });	
+
+
+      this.accountuser=user;
+      this.accountid=id;
+      
+     })
+     .catch(function(error){
+      this.title='error getting items'
+     })
+    },
+    editAccount:function(userid,companyid,id,name,amount){
+    	this.accountuser=userid;
+    	this.companyid=companyid;
+    	this.accountid=id;
+    	this.accountname=name;
+    	this.accountbalance=amount;    	   	
+    }
+    // not yet implemmented
+    ,
+      deleteAccount:function(id){
+    	 this.$http.delete('/api/account/'+id+'/')
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        this.getAccount()
+        // alert('response')
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+
+    }
+
+    // end account control code
+
+    // begin employee control code
+    // ###########################
+    // ###########################
+    // ###########################
+    // ###########################
+    // ###########################
+    // ###########################
+    // ###########################
+    // ###########################
+    // ###########################
+       ,
+    checkSubmitEmployeeForm:function(e){  
+      if(this.editemployee){
+        // updating editing item
+        this.$http.put('/api/employee/'+this.employeeid+'/',{'employee_privillage':this.employeeprivillage,'employee_position':this.employeeposition,'employee_firstname':this.employeefirstname,'employee_phone':this.employeephone,'company':this.employecompany,'user':this.employeeuser})
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        this.employeeid='';
+    	this.employeeprivillage='';
+    	this.employeeposition='';
+    	this.employeefirstname='';
+    	this.editemployee=false;
+    	this.employeephone='';
+    	this.addemployeebutton='Add';
+    	this.employeeuser='';
+    	this.employecompany='';
+    	this.getEmployee();
+
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+        
+      }  else{
+        this.$http.post('/api/employee/',{'company':this.companyid,'employee_position':this.employeeposition,'employee_privillage':this.employeeprivillage,'employee_firstname':this.employeefirstname,'employee_phone':this.employeephone})
+
+
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        this.employeeuser='';
+        this.employeeid='';
+    	this.employeeprivillage='';
+    	this.employeefirstname='';
+    	this.employeeposition='';
+    	this.employeephone='';
+    	this.employecompany='';
+    	this.getEmployee();
+        
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+
+      }         
+        
+      e.preventDefault();
+    },
+    getEmployee:function(){
+     this.$http.get('/api/employee')
+     .then(function(response){
+      this.employees=response.data
+      
+     })
+     .catch(function(error){
+      this.title='error getting items'
+     })
+    },
+    editEmployee:function(id,firstname,privillage,position,phone,company,user){
+    	this.employeeid=id;
+    	this.employeefirstname=firstname;
+    	this.employeeprivillage=privillage;
+    	this.employeeposition=position;
+    	this.employeephone=phone;
+    	this.employecompany=company;
+    	this.employeeuser=user;
+    	this.addemployeebutton="Edit";
+    	this.editemployee=true;
+    },
+    deleteEmployee:function(id){
+    	 this.$http.delete('/api/employee/'+id+'/')
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        this.getEmployee()
+        // alert('response')
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+
+    }
+
+
+
+
+    // end employee control code
+
+
+  }
+  ,
+    beforeMount(){
+      this.getCompany()
+      this.getStore()
+      this.getAccount()
+      this.getEmployee()
+    }
+})
+
+  </script>
+{%endblock%}

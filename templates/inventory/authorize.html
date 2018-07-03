@@ -1,0 +1,161 @@
+
+
+{%extends 'home/base.html'%}
+
+{%block style%}
+
+{%endblock%}
+
+{%block content%}
+<div id="authorize">
+	<h1 v-cloak> Tsh [[totalsale]]</h1>
+
+		<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Date</th>
+      <th scope="col">Seller</th>
+      <th scope="col">Customer</th>
+<!--       <th scope="col">Issuer</th>
+ -->      <th scope="col">Product Name</th>
+      <th scope="col">Quantity</th>
+      <th scope="col">Cost</th>
+      <th scope="col">Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr v-for="sale in sales" v-if="!sale.sales_authorized" v-cloak>
+      <th scope="row" v-cloak>[[sale.id]]</th>
+      <td v-cloak> [[sale.created_at]] </td>
+      <td v-cloak v-for="user in users" v-if="user.id==sale.user"> <span v-for="employee in employees" v-if="employee.user == user.id" v-cloak>
+      	[[employee.employee_firstname]]
+      </span>
+      </td>
+      <td v-cloak v-for="customer in customers" v-if="sale.customer == customer.id">  [[customer.customer_name]]</td>
+<!--       <td v-cloak>  Issuer</td>
+ -->      <td v-if="item.id == sale.item" v-for ="item in items" v-cloak>[[item.item_name]]</td>
+      <td v-cloak>[[sale.sales_quantity]]</td>
+      <td v-cloak>[[sale.sales_amount]]</td>
+	  <td v-cloak v-if="sale.sales_received && !sale.sales_authorized"> <button class="btn btn-small btn-dark" v-on:click="authorizeSale(sale.id)">Authorize</button></td>
+	  <td v-cloak v-if="!sale.sales_received && !sale.sales_authorized"> Pending ....</td>
+      
+    </tr>
+    
+  </tbody>
+</table>
+
+</div>
+{%endblock%}
+
+{%block script%}
+  <script >
+  new Vue({
+  	delimiters: ['[[', ']]'],
+  	el: '#authorize',
+  	data:{
+  		totalsale:'',
+  		title:'',
+  		sales:'',
+  		user:'',
+  		items:'',
+  		customers:'',
+  		employees:'',
+  		users:'',
+  	},
+  	methods:{
+  		  	getSales:function(){
+  		this.title='fetching data'
+  		// note :
+  		// this function is modified to get all sales objeects regardless of the user requesting this object
+  		 this.$http.get('/api/sale/'+1)
+  		 .then(function(response){
+  		 	this.sales=response.data.serial
+  		 	this.title='data fetched'
+  		 	this.user= response.data.userid
+  		 	// alert("welcome")
+  		 	// this.totalacceptsale=this.getTotalAcceptSales(this.sales)
+  		 	this.totalsale=this.getToatalSales(this.sales)
+  		 })
+  		 .catch(function(error){
+  		 	this.title='error getting salse'
+  		 })
+  	},
+  		getToatalSales:function(sales){
+
+  		var amount=0;  	
+		$.each(sales,function(key, value) {
+			     if(value.sales_received && !value.sales_authorized){
+			     	amount+=value.sales_amount
+				     }
+				 });
+		
+		return amount;
+  	},
+  	getItems:function(){
+		 this.$http.get('/api/item')
+		 .then(function(response){
+		 	this.items=response.data
+		 })
+		 .catch(function(error){
+		 	this.title='error getting items'
+		 })
+  	},
+  	getUsers:function(){
+		 this.$http.get('/api/user')
+		 .then(function(response){
+		 	this.users=response.data
+		 })
+		 .catch(function(error){
+		 	this.title='error getting items'
+		 })
+  	},
+  	getEmployees:function(){
+		 this.$http.get('/api/employee')
+		 .then(function(response){
+		 	this.employees=response.data
+		 })
+		 .catch(function(error){
+		 	this.title='error getting items'
+		 })
+  	},
+  	getCustomers:function(){
+		 this.$http.get('/api/customer')
+		 .then(function(response){
+		 	this.customers=response.data
+		 })
+		 .catch(function(error){
+		 	this.title='error getting items'
+		 })
+  	},
+  		authorizeSale:function(id){
+  		this.$http.post('/authorizesale/'+id+'/',{'id':id})
+  		 .then(function(response){
+  		 	// this.items=response.data
+  		 	this.title=response.data
+	  		this.getSales()
+	  		this.getItems()
+	  		this.getUsers()
+	  		this.getEmployees()
+			this.getCustomers()
+  		 	// alert('response')
+  		 })
+  		 .catch(function(error){
+  		 	this.title='error getting items'
+  		 })
+
+  	},
+
+  	},
+  	beforeMount(){
+  		this.getSales()
+  		this.getItems()
+  		this.getUsers()
+  		this.getEmployees()
+		this.getCustomers()
+
+  	}
+  })
+
+  </script>
+{%endblock%}

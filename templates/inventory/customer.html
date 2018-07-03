@@ -1,0 +1,28 @@
+
+
+{%extends 'home/base.html'%}
+
+{%block style%}
+
+{%endblock%}
+
+{%block content%}
+<div id="customerpage">
+	<h1 v-cloak>[[customer]]</h1>
+</div>
+
+{%endblock%}
+
+{%block script%}
+  <script >
+  new Vue({
+  	delimiters: ['[[', ']]'],
+  el: '#customerpage',
+  data:{
+  	customer:'customer'
+  }
+  })
+
+
+  </script>
+{%endblock%}
