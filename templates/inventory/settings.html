@@ -198,10 +198,22 @@
       <label class="sr-only" for="inlineFormInputGroupEmployeePosition">position</label>        
         <input type="text" class="form-control" id="inlineFormInputGroupEmployeePosition" placeholder="position" v-model="employeeposition">
     </div>
-    <div class="col-sm-3 my-1">
-      <label class="sr-only" for="inlineFormInputEmployeePrivilage">privillage</label>
-      <input type="text" class="form-control" id="inlineFormInputEmployeePrivilage" placeholder="privillage" v-model="employeeprivillage">
+
+    <!-- new selection priv -->
+    <div class="input-group col-sm-3">
+    <div class="input-group-prepend">
+      <label class="input-group-text" for="inputGroupSelect01">Package</label>
     </div>
+    <select   class="custom-select" id="inputGroupSelect03" v-model="employeeprivillage">
+      <option selected value=3>Sales</option>
+      <option value=1> Admin </option> 
+      <option value=2> Assistant</option>   
+      <option value=4> Cashier </option>  
+      <option value=5> Godown </option> 
+    </select>
+  </div>
+
+    <!-- end -->
     
     
   </div>
@@ -216,7 +228,7 @@
       </div>
       <div>
       <h4 class="my-0" v-cloak> [[employee.employee_position]] </h4>
-      <small class="text-muted" v-cloak> [[employee.employee_privillage]] </small>
+      <small class="text-muted" v-cloak> [[toStringPriviilage(employee.employee_privillage)]] </small>
         
       </div>
 
@@ -599,6 +611,22 @@ new Vue({
        .catch(function(error){
         this.title='error getting items'
        })
+
+    },
+    toStringPriviilage:function(priv){
+    	if(priv==3){
+    		return "sales";
+    	}else if(priv == 1){
+    		return "admin";
+    	}else if(priv == 2){
+    		return "assistant"
+
+    	}else if(priv == 4){
+    		return "bursar"
+    		
+    	}else if(priv == 5){
+    		return "godown";
+    	}
 
     }
 

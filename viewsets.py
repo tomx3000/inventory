@@ -117,14 +117,14 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 		# print(request.data.get('employee_firstname'))
 		
 		# sending login credential to admin or user them selves
-		# send_mail(
-		# 	    'NEWUSER',
-		# 	    'OCEANIC \n firstname :'+request.data.get('employee_firstname')+'\n'+'username :'+username+'\n password: '+password,
-		# 	    'tomx3000@gmail.com',
-		# 	    ['thomasbahati@rocketmail.com'],
-		# 	    fail_silently=False,
+		send_mail(
+			    'NEWUSER',
+			    'OCEANIC \n firstname :'+request.data.get('employee_firstname')+'\n'+'username :'+username+'\n password: '+password,
+			    'tomx3000@gmail.com',
+			    ['thomasbahati@rocketmail.com'],
+			    fail_silently=False,
 			   
-		# 	)
+			)
 
 		return Response({'username':username,'password':password})
 

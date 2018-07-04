@@ -1,0 +1,273 @@
+
+
+{%extends 'home/base.html'%}
+
+{%block style%}
+
+{%endblock%}
+
+{%block content%}
+<div id="profile">
+	<h1 v-cloak>Welcome {{user.username}}</h1>
+<div class="row">
+
+	<div class="col-lg-8 col-md-8 col-sm-12 col-12">
+
+  <ul class="list-group" v-for="employee in employees" v-if="employee.user==userid">
+     <div class="row">
+   <li style="" class="list-group-item d-flex justify-content-between lh-condensed col-12 col-sm-12 col-md-12 col-lg-6">
+        <div>
+        <h4  class="my-0" >  Firstname </h4>
+        <small class="text-muted">  </small>
+      </div>
+      <div>
+      <h4 class="my-0" v-cloak> [[employee.employee_firstname]] </h4>
+      <small class="text-muted">  </small>
+        
+      </div>
+      
+  </li>
+   <li style="" class="list-group-item d-flex justify-content-between lh-condensed col-12 col-sm-12 col-md-12 col-lg-6">
+        <div>
+        <h4  class="my-0" >  Middle Name </h4>
+        <small class="text-muted">  </small>
+      </div>
+      <div>
+      <h4 class="my-0" v-cloak> [[employee.employee_secondname]] </h4>
+      <small class="text-muted">  </small>
+        
+      </div>
+      
+      
+  </li>
+     	
+     </div>
+
+          <div class="row" style="margin-top: 20px;">
+     	   <li class="list-group-item d-flex justify-content-between lh-condensed col-6">
+        <div>
+        <h4  class="my-0" >  Last Name </h4>
+        <small class="text-muted">  </small>
+      </div>
+      <div>
+      <h4 class="my-0">  </h4>
+      <small class="text-muted">  </small>
+        
+      </div>
+      
+      
+  </li>
+   <li style="" class="list-group-item d-flex justify-content-between lh-condensed col-6">
+        <div>
+        <h4  class="my-0" >  Phone </h4>
+        <small class="text-muted">  </small>
+      </div>
+      <div>
+      <h4 class="my-0">  </h4>
+      <small class="text-muted">  </small>
+        
+      </div>
+      
+      
+  </li>
+     	
+     </div>
+
+               <div class="row" style="margin-top: 20px;">
+     	   <li class="list-group-item d-flex justify-content-between lh-condensed col-6">
+        <div>
+        <h4  class="my-0" >  Email </h4>
+        <small class="text-muted">  </small>
+      </div>
+      <div>
+      <h4 class="my-0">  </h4>
+      <small class="text-muted">  </small>
+        
+      </div>
+      
+      
+  </li>
+   <li style="" class="list-group-item d-flex justify-content-between lh-condensed col-6">
+        <div>
+        <h4  class="my-0" >  Position </h4>
+        <small class="text-muted">  </small>
+      </div>
+      <div>
+      <h4 class="my-0">  </h4>
+      <small class="text-muted">  </small>
+        
+      </div>
+      
+      
+  </li>
+     	
+     </div>
+
+               <div class="row" style="margin-top: 20px;">
+     	   <li class="list-group-item d-flex justify-content-between lh-condensed col-6">
+        <div>
+        <h4  class="my-0" >  Address </h4>
+        <small class="text-muted">  </small>
+      </div>
+      <div>
+      <h4 class="my-0">  </h4>
+      <small class="text-muted">  </small>
+        
+      </div>
+      
+      
+  </li>
+   <li style="" class="list-group-item d-flex justify-content-between lh-condensed col-6">
+        <div>
+        <h4  class="my-0" >  Access Level</h4>
+        <small class="text-muted">  </small>
+      </div>
+      <div>
+      <h4 class="my-0">  </h4>
+      <small class="text-muted">  </small>
+        
+      </div>
+      
+      
+  </li>
+     	
+     </div>
+
+               <div class="row" style="margin-top: 20px;">
+     	   <li class="list-group-item d-flex justify-content-between lh-condensed col-6">
+        <div>
+        <h4  class="my-0" >  Username </h4>
+        <small class="text-muted">  </small>
+      </div>
+      <div>
+      <h4 class="my-0">  </h4>
+      <small class="text-muted">  </small>
+        
+      </div>
+      
+      
+  </li>
+   <li style="" class="list-group-item d-flex justify-content-between lh-condensed col-6">
+        <div>
+        <h4  class="my-0" >  Password Cahnge </h4>
+        <small class="text-muted">  </small>
+      </div>
+      <div>
+      <h4 class="my-0">  </h4>
+      <small class="text-muted">  </small>
+        
+      </div>
+      
+      
+  </li>
+     	
+     </div>
+
+
+</ul> 
+
+  
+</div>	
+</div>
+</div>
+{%endblock%}
+
+{%block script%}
+  <script >
+  new Vue({
+  	delimiters: ['[[', ']]'],
+  el: '#profile',
+  data:{
+  	profile:'welcome',
+  	usernameedit:false,
+  	username:'',
+  	userid:'',
+  	employees:'',
+  	users:'',
+  },methods:{
+  	updateUser:function(id,input,str){
+  		alert(id)
+  		alert(input)
+  		alert(str)
+
+  		   // updating editing item
+        this.$http.put('/api/user/'+id+'/',{str:input
+        })
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        this.usernameedit=false;
+
+        this.getUser()
+
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+
+  	},
+  	updateEmployee:function(id,input,str){
+  			   // updating editing item
+        this.$http.put('/api/employee/'+id+'/',{str:input
+        })
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        this.getEmployee()
+
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+  	}
+  	,
+    getuserid:function(){
+     this.$http.get('/api/company')
+     .then(function(response){
+      this.userid=response.data.userid
+      
+     })
+     .catch(function(error){
+      this.title='error getting items'
+     })
+    },
+    getEmployee:function(){
+    	this.$http.get('/api/employee')
+     .then(function(response){
+      this.employees=response.data
+      
+     })
+     .catch(function(error){
+      this.title='error getting items'
+     })
+    },
+    getUser:function(){
+    	this.$http.get('/api/user')
+     .then(function(response){
+      this.users=response.data
+      
+     })
+     .catch(function(error){
+      this.title='error getting items'
+     })
+    },
+    editProfileEnable:function(str){
+    	alert(str)
+    	if(str=='username'){
+    		this.usernameedit = true;
+
+    	}
+
+    }
+
+    
+  },beforeMount(){
+  	this.getuserid()
+  	this.getEmployee()
+	this.getUser()
+  }
+  })
+
+
+  </script>
+{%endblock%}

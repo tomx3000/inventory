@@ -161,9 +161,9 @@ body {
     </tr>
   </thead>
   <tbody>
-    <tr v-for="sale in sales" v-if="sale.sales_received" v-cloak>
+    <tr v-for="sale in sales" v-if="sale.sales_received && !sale.sales_authorized" v-cloak>
       <th scope="row" v-cloak>[[sale.id]]</th>
-      <td v-cloak> [[sale.created_at]] </td>
+      <td v-cloak> [[parseDate(sale.created_at)]] </td>
       <td v-if="item.id == sale.item" v-for ="item in items" v-cloak>[[item.item_name]]</td>
       <td v-cloak>[[sale.sales_quantity]]</td>
       <td v-cloak>[[sale.sales_amount]]</td>
@@ -249,6 +249,10 @@ body {
 {%endblock%}
 
 {%block script%}
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+ <script>
+    moment().format();
+</script>
   <script >
 
 // Vue.http.interceptors.push(function (request, next) {
@@ -256,6 +260,7 @@ body {
 //     next();
 // });
    		// alert(csrftoken)
+
 new Vue({
   delimiters: ['[[', ']]'],
   el: '#app',
@@ -407,7 +412,7 @@ new Vue({
 
   		var amount=0;  	
 		$.each(sales,function(key, value) {
-			     if(value.sales_received){
+			     if(value.sales_received && !value.sales_authorized){
 			     	amount+=value.sales_amount
 				     }
 				 });
@@ -429,7 +434,12 @@ new Vue({
 		this.itemprice=amount
 		this.maxdiscount=amount*(1-(discount/100))
 		this.quantityleft=itemquantity
-  	}
+  	},
+  	parseDate:function(date){
+
+  	return moment(date).format('LLLL');
+
+  	},
 
 
   	},

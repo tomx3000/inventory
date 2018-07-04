@@ -38,7 +38,7 @@ class Company(models.Model):
 
 
 	def __str__(self):
-		return str(self.company_name)
+		return str(self.id)+": "+str(self.company_name)
 	pass
 
 class Store(models.Model):
@@ -60,6 +60,7 @@ class Customer(models.Model):
 	company=models.ForeignKey(Company,on_delete=models.CASCADE,null=True,blank=True)
 	customer_name=models.CharField(max_length=20,null=True,blank=True)
 	customer_transport=models.CharField(max_length=20,null=True,blank=True)
+	customer_phone=models.CharField(max_length=20,null=True,blank=True)
 	customer_location=models.CharField(max_length=30,null=True,blank=True)
 	customer_status=models.BooleanField(default=True)
 	created_at=models.DateTimeField(auto_now_add=True,null=True,blank=True)

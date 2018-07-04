@@ -27,7 +27,7 @@
   <tbody>
     <tr v-for="sale in sales" v-if="!sale.sales_authorized" v-cloak>
       <th scope="row" v-cloak>[[sale.id]]</th>
-      <td v-cloak> [[sale.created_at]] </td>
+      <td v-cloak> [[parseDate(sale.created_at)]] </td>
       <td v-cloak v-for="user in users" v-if="user.id==sale.user"> <span v-for="employee in employees" v-if="employee.user == user.id" v-cloak>
       	[[employee.employee_firstname]]
       </span>
@@ -49,6 +49,10 @@
 {%endblock%}
 
 {%block script%}
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+ <script>
+    moment().format();
+</script>
   <script >
   new Vue({
   	delimiters: ['[[', ']]'],
@@ -143,6 +147,10 @@
   		 .catch(function(error){
   		 	this.title='error getting items'
   		 })
+
+  	},parseDate:function(date){
+
+  	return moment(date).format('LLLL');
 
   	},
 

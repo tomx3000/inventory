@@ -9,6 +9,10 @@ from .forms import ItemForm
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth.decorators import login_required
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 # Create your views here.
 
 pathselector={1:'base',2:'base',3:'order',4:'expense',5:'counter'}
@@ -83,7 +87,11 @@ class MyView(View):
 
 		sale_order.save()
 		return HttpResponse('ok')
-class HomePage(View):
+
+
+
+class HomePage(LoginRequiredMixin,View):
+	login_url = '/login/'
 	def get(self,request,*args,**kagrs):
 		form=ItemForm()
 
@@ -95,6 +103,10 @@ class HomePage(View):
 			return redirect(pathselector[request.user.employee.employee_privillage])
 
 
+
+
+
+@login_required(login_url='/login/')
 def ViewOrder(request,*args,**kargs):
 
 	user = request.user
@@ -106,7 +118,7 @@ def ViewOrder(request,*args,**kargs):
 
 		
 
-
+@login_required(login_url='/login/')
 def ViewProduct(request,*args,**kargs):
 	user = request.user
 	
@@ -116,6 +128,9 @@ def ViewProduct(request,*args,**kargs):
 	else:
 		return redirect(pathselector[request.user.employee.employee_privillage])
 
+
+
+@login_required(login_url='/login/')
 def ViewCustomer(request,*args,**kargs):
 	user = request.user
 	# access to the order/sales page limited to admin 1 and 2 and sales person 3
@@ -124,6 +139,9 @@ def ViewCustomer(request,*args,**kargs):
 	else:
 		return redirect(pathselector[request.user.employee.employee_privillage])
 
+
+
+@login_required(login_url='/login/')
 def ViewCounter(request,*args,**kargs):
 
 	user = request.user
@@ -135,6 +153,7 @@ def ViewCounter(request,*args,**kargs):
 		return redirect(pathselector[request.user.employee.employee_privillage])
 
 
+@login_required(login_url='/login/')
 def ViewSettings(request,*args,**kargs):
 
 	# less than 2 is admin
@@ -146,7 +165,7 @@ def ViewSettings(request,*args,**kargs):
 		return redirect(pathselector[request.user.employee.employee_privillage])
 
 
-
+@login_required(login_url='/login/')
 def ViewExpense(request,*args,**kargs):
 
 	user = request.user
@@ -157,8 +176,12 @@ def ViewExpense(request,*args,**kargs):
 	else:
 		return redirect(pathselector[request.user.employee.employee_privillage])
 
-
-
+@login_required(login_url='/login/')
+def ViewProfile(request,*args,**kargs):
+	user = request.user
+	
+	return render(request,'inventory/profile.html',{'user':user})
+	
 	
 def ViewLogin(request,*args,**kargs):
 	form=ItemForm()
@@ -176,12 +199,13 @@ def ViewLogin(request,*args,**kargs):
 		    return redirect('base')
 
 		else:
-			return render(request,'inventory/login.html',{'form':form})	
+			return render(request,'inventory/login.html',{})	
 
 	elif(request.method=='GET'):
 		return render(request,'inventory/login.html',{'form':form})		
 
-	
+
+@login_required(login_url='/login/')
 def ViewAuthorize(request,*args,**kargs):
 
 	# less than 2 is admin
@@ -190,6 +214,8 @@ def ViewAuthorize(request,*args,**kargs):
 		return render(request,'inventory/authorize.html',{})
 	else:
 		return redirect(pathselector[request.user.employee.employee_privillage])
+
+
 
 
 # print(args)
