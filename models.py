@@ -102,7 +102,7 @@ class Item(models.Model):
 	item_package_name=models.CharField(max_length=20,null=True,blank=True,default="single")
 	item_package_quantity=models.FloatField(blank=True,null=True)
 	item_per_package=models.FloatField(null=True,blank=True)
-	item_expiration_date=models.DateField(null=True,blank=True)
+	item_minimum_allowed_quantity=models.FloatField(null=True,blank=True,default=20)
 	item_image=models.ImageField(null=True,blank=True)
 	created_at=models.DateTimeField(auto_now_add=True,null=True,blank=True)
 	updated_at=models.DateTimeField(auto_now=True,null=True,blank=True)
@@ -178,7 +178,10 @@ class Account(models.Model):
 class Expense(models.Model):
 	expense_user=models.ForeignKey(User,on_delete=models.CASCADE)
 	expense_account=models.ForeignKey(Account,on_delete=models.CASCADE)
-	expense_description=models.CharField(max_length=40)
+	expense_item=models.CharField(max_length=40,default='expense')
+	expense_receiver=models.CharField(max_length=40,default='receiver')
+	# description is to imply why spend
+	expense_description=models.TextField(null=True,blank=True)
 	expense_amount=models.FloatField()
 	created_at=models.DateTimeField(auto_now_add=True,null=True,blank=True)
 	updated_at=models.DateTimeField(auto_now=True,null=True,blank=True)

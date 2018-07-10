@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets,filters
 from .models import Sales,Store,Employee,Company,Customer,Inventory,Item,Account,Expense
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -17,31 +17,33 @@ class SalesViewSet(viewsets.ModelViewSet):
 
 	queryset=Sales.objects.all()
 	serializer_class=SalesSerializer
+	filter_backends = (filters.SearchFilter,)
+	search_fields = ('customer__customer_name', 'item__item_name','sales_quantity','sales_amount','user__employee__employee_firstname','created_at','id')
 	authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 	permission_classes=(permissions.IsAuthenticatedOrReadOnly,)
                         
 
 
-	def list(self,request):
-		userid=request.user.id
-		# print(user)
-		# qs = Sales.objects.filter(user=user)
+	# def list(self,request):
+	# 	userid=request.user.id
+	# 	# print(user)
+	# 	# qs = Sales.objects.filter(user=user)
 
-		qs = Sales.objects.filter(id__gte=1,user=request.user)
+	# 	qs = Sales.objects.filter(id__gte=1,user=request.user)
 
-		serializer=SalesSerializer(qs,many=True)
-		return Response({'serial':serializer.data,'userid':userid})
+	# 	serializer=SalesSerializer(qs,many=True)
+	# 	return Response({'serial':serializer.data,'userid':userid})
 
 	# overiding use of geting on value of sale to making it get all values of sale without considering user requesting it
-	def retrieve(self, request, pk=None):
-		userid=request.user.id
+	# def retrieve(self, request, pk=None):
+	# 	userid=request.user.id
 
-		qs = Sales.objects.all()
+	# 	qs = Sales.objects.all()
 
 
-		serializer=SalesSerializer(qs,many=True)
+	# 	serializer=SalesSerializer(qs,many=True)
 
-		return Response({'serial':serializer.data,'userid':userid})
+	# 	return Response({'serial':serializer.data,'userid':userid})
         
 
 	# @csrf_exempt
@@ -70,6 +72,8 @@ class UserViewSet(viewsets.ModelViewSet):
 class ExpenseViewSet(viewsets.ModelViewSet):
 	queryset=Expense.objects.all()
 	serializer_class=ExpenseSerializer
+	filter_backends = (filters.SearchFilter,)
+	search_fields = ('expense_item', 'expense_description','expense_amount','expense_user__employee__employee_firstname','created_at')
 	authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 	permission_classes=(permissions.IsAuthenticatedOrReadOnly,)
 
@@ -96,7 +100,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 		import random
 		import string
 
-		def generateRoandom(size=4,chars=string.ascii_lowercase):
+		def generateRoandom(size=4,chars=string.ascii_lowercase+string.ascii_uppercase+string.digits):
 
 			return ''.join(random.choice(chars) for _ in range(size))
 
@@ -105,7 +109,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 		while(not user):
 			username = request.data.get('employee_firstname')+''+generateRoandom(3)
 
-			password=generateRoandom(6)
+			password=generateRoandom(8)
 			email=request.data.get('employee_firstname')+'@gmail.com'
 			user = User.objects.create_user(username, email, password)
 
@@ -126,7 +130,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 			   
 			)
 
-		return Response({'username':username,'password':password})
+		return Response({'username':username,'password':'password'})
 
 	def destroy(self,request,pk=None):
 		User.objects.filter(id=Employee.objects.get(id=pk).user.id).delete()
@@ -155,6 +159,8 @@ class CompanyViewSet(viewsets.ModelViewSet):
 class CustomerViewSet(viewsets.ModelViewSet):
 	queryset=Customer.objects.all()
 	serializer_class=CustomerSerializer
+	filter_backends = (filters.SearchFilter,)
+	search_fields = ('customer_name', 'customer_phone','customer_location','customer_transport','created_at')
 	authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 	permission_classes=(permissions.IsAuthenticatedOrReadOnly,)
 
@@ -168,8 +174,15 @@ class ItemViewSet(viewsets.ModelViewSet):
 
 	queryset=Item.objects.all()
 	serializer_class=ItemSerializer
+	filter_backends = (filters.SearchFilter,)
+	search_fields = ('item_name', 'item_price','item_size','item_manufucture')
 	authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 	permission_classes=(permissions.IsAuthenticatedOrReadOnly,)
+
+
+
+
+    
 	
 
 

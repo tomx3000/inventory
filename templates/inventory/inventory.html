@@ -6,6 +6,25 @@
 
 {%endblock%}
 
+{%block inputsearch%}
+
+   <div id="searchoderstock">
+    
+    <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow row ">
+      <a class="navbar-brand col-2 col-sm-2 col-md-2 col-lg-2  mr-0 " href="#">Oceanic : {{user.username}}
+      </a>
+      <input class="form-control form-control-dark col-5 col-sm-5 col-md-8 col-lg-8 w-100" type="text" placeholder="Search" aria-label="Search" v-model="searchfiledoderstock" v-on:keyup.enter="getOrderStock">
+      <button class='btn btn-outline-secondary my-2 my-sm-0 col-2 col-sm-2 col-md-1 col-lg-1' v-cloak v-on:click.prevent="getOrderStock()">search</button>
+      <ul class="navbar-nav px-3 col-3 col-sm-3 col-md-1 col-lg-1">
+        <li class="nav-item text-nowrap ">
+          <a class="nav-link" href="/login/">Sign out</a>
+        </li>
+      </ul>
+    </nav>
+
+  </div>
+    {%endblock%}
+
 {%block content%}
 <div id="inventory">
 	<h1 v-cloak>[[inventory]]</h1>
@@ -34,10 +53,10 @@
       </td>
       <td v-cloak v-for="customer in customers" v-if="sale.customer == customer.id">  [[customer.customer_name]]</td>
 <!--       <td v-cloak>  Issuer</td>
- -->      <td v-if="item.id == sale.item" v-for ="item in items" v-cloak>[[item.item_name]]</td>
+ -->      <td v-if="item.id == sale.item" v-for ="item in itemssales" v-cloak>[[item.item_name]]</td>
       <td v-cloak>[[sale.sales_quantity]]</td>
 	  <td v-cloak v-if="!sale.sales_authorized && !sale.sales_issue_item"> Pending ....</td>
-	  <td v-cloak v-if="sale.sales_authorized && !sale.sales_issue_item"><button class="btn btn-small btn-dark" v-on:click="issueSale(sale.id)">Issue</button>.</td>
+	  <td v-cloak v-if="sale.sales_authorized && !sale.sales_issue_item"><button class="btn btn-small btn-dark" v-on:click="issueSale(sale.id)">Issue</button></td>
       
     </tr>
     
@@ -75,7 +94,7 @@
    <ul class="list-group">
 
 
-      <li class="list-group-item d-flex justify-content-between lh-condensed" style="margin-top:10px" v-for="item in items"  v-cloak>
+      <li v-bind:class="{'list-group-item':true,'d-flex':true,'justify-content-between':true,'lh-condensed':true,'bg-info':(item.item_size<=item.item_minimum_allowed_quantity)}" style="margin-top:10px" v-for="item in items"  v-cloak>
 
               <div> 
           <h6  class="my-0" v-cloak> [[item.item_name]] </h6>
@@ -119,7 +138,58 @@
     moment().format();
 </script>
   <script >
-  new Vue({
+
+new Vue({
+  delimiters: ['[[', ']]'],
+  el: '#searchoderstock',
+  data:{
+    searchfiledoderstock:'',
+    title:'',
+
+  },methods:{
+    getOrderStock:function(){
+           let api_url='/api/sale';
+      if(this.searchfiledoderstock!==''||this.searchfiledoderstock!==null){
+        api_url='/api/sale/?search='+this.searchfiledoderstock;
+      }
+
+      let api_url2='/api/item';
+      if(this.searchfiledoderstock!==''||this.searchfiledoderstock!==null){
+        api_url2='/api/item/?search='+this.searchfiledoderstock;
+      }
+
+     this.$http.get(api_url)
+     .then(function(response){
+
+      vminvetory.sales=response.data
+      vminvetory.totalsale=vminvetory.getToatalSales(vminvetory.sales)
+      // this.alertOnMininumIrem(this.items)
+     })
+     .catch(function(error){
+      this.title='error getting items'
+     })
+
+     this.$http.get(api_url2)
+     .then(function(response){
+
+      vminvetory.items=response.data
+		 	vminvetory.alertOnMininumIrem(vminvetory.items)
+     })
+     .catch(function(error){
+      this.title='error getting items'
+     })
+
+
+
+
+    }
+  }
+
+
+})
+
+
+ vminvetory= new Vue({
   	delimiters: ['[[', ']]'],
   el: '#inventory',
   	data:{
@@ -132,17 +202,19 @@
   		customers:'',
   		employees:'',
   		users:'',
+  		itemssales:'',
   	},
   	methods:{
   		  	getSales:function(){
   		this.title='fetching data'
   		// note :
   		// this function is modified to get all sales objeects regardless of the user requesting this object
-  		 this.$http.get('/api/sale/'+1)
+  		 this.$http.get('/api/sale/')
   		 .then(function(response){
-  		 	this.sales=response.data.serial
+  		 	this.sales=response.data
   		 	this.title='data fetched'
-  		 	this.user= response.data.userid
+  		 	// this.user= response.data.userid
+
   		 	// alert("welcome")
   		 	// this.totalacceptsale=this.getTotalAcceptSales(this.sales)
   		 	this.totalsale=this.getToatalSales(this.sales)
@@ -150,6 +222,9 @@
   		 .catch(function(error){
   		 	this.title='error getting salse'
   		 })
+
+
+
   	},
   		getToatalSales:function(sales){
 
@@ -166,11 +241,28 @@
 		 this.$http.get('/api/item')
 		 .then(function(response){
 		 	this.items=response.data
+		 	this.itemssales=response.data
+		 	this.alertOnMininumIrem(this.items)
 		 })
 		 .catch(function(error){
 		 	this.title='error getting items'
 		 })
-  	},
+  	},alertOnMininumIrem:function(items){
+  		var sms='';
+      $.each(items, function(key, value) {
+           if(value.item_size<=value.item_minimum_allowed_quantity){
+           	sms+='remaining ';
+           	sms+=value.item_size;
+           	sms+=' ';
+           	sms+=value.item_name;
+           	sms+=value.item_size>1?'s':'';
+            $.notify(sms ,'info');
+             }
+             sms='';
+         });
+
+
+    },
   	getUsers:function(){
 		 this.$http.get('/api/user')
 		 .then(function(response){
@@ -220,9 +312,21 @@
   	return moment(date).format('LLLL');
 
   	},
+    getUserid:function(){
+      this.$http.get('/api/company')
+     .then(function(response){
+      // this.company=response.data.serial
+      this.user=response.data.userid
+      
+     })
+     .catch(function(error){
+      this.title='error getting items'
+     })
+    }
 
   	},
   	beforeMount(){
+  		this.getUserid()
   		this.getSales()
   		this.getItems()
   		this.getUsers()

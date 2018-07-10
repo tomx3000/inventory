@@ -8,89 +8,115 @@
 
 {%block content%}
 <div id="profile">
-	<h1 v-cloak>Welcome {{user.username}}</h1>
-<div class="row">
+<!-- 	<h1 v-cloak>Welcome {{user.username}}</h1>
+ -->
+<!-- <div  class="position-fixed align-right" style="left:50%;">
+	<div class="alert alert-danger alert-dismissible slide show" role="alert" >
+  <strong>Holy guacamole!</strong> You should check in on some of those fields below.
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="alert alert-dark alert-dismissible slide show" role="alert" >
+  <strong>Holy guacamole!</strong> You should check in on some of those fields below.
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
 
-	<div class="col-lg-8 col-md-8 col-sm-12 col-12">
+<div class="alert alert-secondary alert-dismissible slide show" role="alert" >
+  <strong>Holy guacamole!</strong> You should check in on some of those fields below.
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+</div>
+ -->
+ <div class="row">
+
+	<div class="col-lg-8 col-md-8 col-sm-12 col-12" style="margin-right: 20px;">
 
   <ul class="list-group" v-for="employee in employees" v-if="employee.user==userid">
      <div class="row">
-   <li style="" class="list-group-item d-flex justify-content-between lh-condensed col-12 col-sm-12 col-md-12 col-lg-6">
+   <li style="" class="list-group-item d-flex justify-content-between lh-condensed col-12 col-sm-12 col-md-12 col-lg-6" v-on:dblclick="enableEdit('firstname')">
         <div>
         <h4  class="my-0" >  Firstname </h4>
-        <small class="text-muted">  </small>
+        <small class="text-muted" v-cloak v-if="!editfirstname">  [[employee.employee_firstname]]</small>
+         <small class="text-muted" v-if="editfirstname"><input type="text" name="" v-model="firstname" class="form-control">  </small>
       </div>
       <div>
-      <h4 class="my-0" v-cloak> [[employee.employee_firstname]] </h4>
-      <small class="text-muted">  </small>
+      <h4 class="my-0" v-cloak v-if="editfirstname"> <button class="btn btn-outline-secondary" type="button" v-on:click="updateEmployee(employee.id,firstname,employee.employee_secondname,employee.employee_thirdname,employee.employee_phone,employee.employee_email,employee.employee_position,employee.employee_address,employee.employee_privillage,employee.user,employee.company,'firstname')">update</button> </h4>
+     
         
       </div>
+      
+  </li>
+
+   <li style="" class="list-group-item d-flex justify-content-between lh-condensed col-12 col-sm-12 col-md-12 col-lg-6" v-on:dblclick="enableEdit('secondname')">
+        <div>
+        <h4  class="my-0" >  Middle Name </h4>
+        <small class="text-muted" v-cloak v-if="!editsecondname"> [[employee.employee_secondname]] </small>
+        <small class="text-muted" v-if="editsecondname"><input type="text" name="" v-model="secondname" class="form-control">  </small>
+      </div>
+      <div>
+      <h4 class="my-0" v-cloak v-if="editsecondname"> <button class="btn btn-outline-secondary" type="button" v-on:click="updateEmployee(employee.id,employee.employee_firstname,secondname,employee.employee_thirdname,employee.employee_phone,employee.employee_email,employee.employee_position,employee.employee_address,employee.employee_privillage,employee.user,employee.company,'secondname')">update</button> </h4>
+        
+      </div>
+      
+      
+  </li>
+     	
+     </div>
+
+<!-- row 2 -->
+          <div class="row" style="margin-top: 20px;">
+     	   <li class="list-group-item d-flex justify-content-between lh-condensed col-12 col-sm-12 col-md-12 col-lg-6" v-on:dblclick="enableEdit('thirdname')">
+        <div>
+        <h4  class="my-0" >  Last Name </h4>
+        <small class="text-muted" v-cloak v-if="!editthirdname"> [[employee.employee_thirdname]] </small>
+        <small class="text-muted" v-if="editthirdname"><input type="text" name="" class="form-control" v-model="thirdname">  </small>
+      </div>
+      <div>
+      <h4 class="my-0" v-cloak v-if="editthirdname"> <button class="btn btn-outline-secondary" type="button" v-on:click="updateEmployee(employee.id,employee.employee_firstname,employee.employee_secondname,thirdname,employee.employee_phone,employee.employee_email,employee.employee_position,employee.employee_address,employee.employee_privillage,employee.user,employee.company,'thirdname')">update</button> </h4>
+        
+      </div>
+      
+      
+  </li>
+   <li style="" class="list-group-item d-flex justify-content-between lh-condensed col-12 col-sm-12 col-md-12 col-lg-6" v-on:dblclick="enableEdit('phone')">
+        <div>
+        <h4  class="my-0" >  Phone </h4>
+        <small class="text-muted" v-cloak v-if="!editphone"> [[employee.employee_phone]] </small>
+        <small class="text-muted" v-if="editphone"><input type="text" name="" class="form-control" v-model="phone">  </small>
+      </div>
+      <div>
+      <h4 class="my-0" v-cloak v-if="editphone"> <button class="btn btn-outline-secondary" type="button" v-on:click="updateEmployee(employee.id,employee.employee_firstname,employee.employee_secondname,employee.employee_thirdname,phone,employee.employee_email,employee.employee_position,employee.employee_address,employee.employee_privillage,employee.user,employee.company,'phone')">update</button> </h4>
+        
+      </div>
+      
+      
+  </li>
+     	
+     </div>
+<!-- row -->
+               <div class="row" style="margin-top: 20px;">
+     	   <li class="list-group-item d-flex justify-content-between lh-condensed col-12 col-sm-12 col-md-12 col-lg-6" v-on:dblclick="enableEdit('email')">
+        <div>
+        <h4  class="my-0" >  Email </h4>
+        <small class="text-muted" v-cloak v-if="!editemial"> [[employee.employee_email]] </small>
+        <small class="text-muted" v-if="editemial"><input type="text" name="" class="form-control" v-model="email">  </small>
+      </div>
+      <div>
+      <h4 class="my-0" v-cloak v-if="editemial"> <button class="btn btn-outline-secondary" type="button" v-on:click="updateEmployee(employee.id,employee.employee_firstname,employee.employee_secondname,employee.employee_thirdname,employee.employee_phone,email,employee.employee_position,employee.employee_address,employee.employee_privillage,employee.user,employee.company,'email')">update</button> </h4>
+        
+      </div>
+      
       
   </li>
    <li style="" class="list-group-item d-flex justify-content-between lh-condensed col-12 col-sm-12 col-md-12 col-lg-6">
         <div>
-        <h4  class="my-0" >  Middle Name </h4>
-        <small class="text-muted">  </small>
-      </div>
-      <div>
-      <h4 class="my-0" v-cloak> [[employee.employee_secondname]] </h4>
-      <small class="text-muted">  </small>
-        
-      </div>
-      
-      
-  </li>
-     	
-     </div>
-
-          <div class="row" style="margin-top: 20px;">
-     	   <li class="list-group-item d-flex justify-content-between lh-condensed col-6">
-        <div>
-        <h4  class="my-0" >  Last Name </h4>
-        <small class="text-muted">  </small>
-      </div>
-      <div>
-      <h4 class="my-0">  </h4>
-      <small class="text-muted">  </small>
-        
-      </div>
-      
-      
-  </li>
-   <li style="" class="list-group-item d-flex justify-content-between lh-condensed col-6">
-        <div>
-        <h4  class="my-0" >  Phone </h4>
-        <small class="text-muted">  </small>
-      </div>
-      <div>
-      <h4 class="my-0">  </h4>
-      <small class="text-muted">  </small>
-        
-      </div>
-      
-      
-  </li>
-     	
-     </div>
-
-               <div class="row" style="margin-top: 20px;">
-     	   <li class="list-group-item d-flex justify-content-between lh-condensed col-6">
-        <div>
-        <h4  class="my-0" >  Email </h4>
-        <small class="text-muted">  </small>
-      </div>
-      <div>
-      <h4 class="my-0">  </h4>
-      <small class="text-muted">  </small>
-        
-      </div>
-      
-      
-  </li>
-   <li style="" class="list-group-item d-flex justify-content-between lh-condensed col-6">
-        <div>
         <h4  class="my-0" >  Position </h4>
-        <small class="text-muted">  </small>
+        <small class="text-muted" v-cloak> [[employee.employee_position]] </small>
       </div>
       <div>
       <h4 class="my-0">  </h4>
@@ -103,24 +129,24 @@
      	
      </div>
 
-               <div class="row" style="margin-top: 20px;">
-     	   <li class="list-group-item d-flex justify-content-between lh-condensed col-6">
+               <div class="row" style="margin-top:20px; margin-bottom:20px; ">
+     	   <li class="list-group-item d-flex justify-content-between lh-condensed col-12 col-sm-12 col-md-12 col-lg-6" v-on:dblclick="enableEdit('address')">
         <div>
         <h4  class="my-0" >  Address </h4>
-        <small class="text-muted">  </small>
+        <small class="text-muted" v-cloak v-if="!editaddress"> [[employee.employee_address]] </small>
+        <small class="text-muted" v-if="editaddress"><input type="text" name="" class="form-control" v-model="address">  </small>
       </div>
       <div>
-      <h4 class="my-0">  </h4>
-      <small class="text-muted">  </small>
+      <h4 class="my-0" v-cloak v-if="editaddress"> <button class="btn btn-outline-secondary" type="button" v-on:click="updateEmployee(employee.id,employee.employee_firstname,employee.employee_secondname,employee.employee_thirdname,employee.employee_phone,employee.employee_email,employee.employee_position,address,employee.employee_privillage,employee.user,employee.company,'address')">update</button> </h4>
         
       </div>
       
       
   </li>
-   <li style="" class="list-group-item d-flex justify-content-between lh-condensed col-6">
+   <li style="" class="list-group-item d-flex justify-content-between lh-condensed col-12 col-sm-12 col-md-12 col-lg-6" >
         <div>
         <h4  class="my-0" >  Access Level</h4>
-        <small class="text-muted">  </small>
+        <small class="text-muted" v-cloak> [[employee.employee_privillage]] </small>
       </div>
       <div>
       <h4 class="my-0">  </h4>
@@ -133,46 +159,73 @@
      	
      </div>
 
-               <div class="row" style="margin-top: 20px;">
-     	   <li class="list-group-item d-flex justify-content-between lh-condensed col-6">
-        <div>
-        <h4  class="my-0" >  Username </h4>
-        <small class="text-muted">  </small>
-      </div>
-      <div>
-      <h4 class="my-0">  </h4>
-      <small class="text-muted">  </small>
-        
-      </div>
-      
-      
-  </li>
-   <li style="" class="list-group-item d-flex justify-content-between lh-condensed col-6">
-        <div>
-        <h4  class="my-0" >  Password Cahnge </h4>
-        <small class="text-muted">  </small>
-      </div>
-      <div>
-      <h4 class="my-0">  </h4>
-      <small class="text-muted">  </small>
-        
-      </div>
-      
-      
-  </li>
-     	
-     </div>
+
 
 
 </ul> 
 
   
 </div>	
+<div class="col-lg-3 col-md-3 col-sm-12 col-12" v-for="user in users" v-if="user.id==userid" v-on:dblclick="closeEditInput()">
+<div class="list-group" >
+  <div  class="list-group-item list-group-item-action flex-column align-items-start ">
+    <div class="d-flex w-100 justify-content-between">
+      <h5 class="mb-1"></h5>
+      <small v-cloak>[[user.username]]</small>
+    </div>
+    <p class="mb-1" >Username  </p>
+<!--     <p class="text-danger" v-cloak>[[error]]</p>
+ -->    <small v-on:click="change('username')" v-if="!editusername">change</small>
+  
+
+
+<div class="input-group mb-3" v-if="editusername">
+  <input type="text" class="form-control" placeholder="username" aria-label="username" aria-describedby="basic-addon2" v-model="username">
+  <div class="input-group-append">
+    <button class="btn btn-outline-secondary" type="button" v-if="editusername" v-on:click="updateUsername(userid,username)">Update</button>
+  </div>
 </div>
+<br><br>
+    <p class="mb-1" >Password</p>
+<!--     <p class="text-danger" v-cloak>[[passerror]]</p>
+ -->    <small v-on:click="change('password')" v-if="!editpassword">change</small>
+    <!-- old password -->
+   	<div class="input-group input-group-sm mb-3" >
+  <div class="input-group-prepend" v-if="editpassword">
+    <span class="input-group-text" id="inputGroup-sizing-sm">old</span>
+  </div>
+  <input type="password" class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm"  v-model="oldpassword" v-if="editpassword">
+</div>
+<!-- end old password -->
+   <!-- new1 password -->
+   	<div class="input-group input-group-sm mb-3" >
+  <div class="input-group-prepend" v-if="editpassword">
+    <span class="input-group-text" id="inputGroup-sizing-sm">new</span>
+  </div>
+  <input type="password" class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm"  v-model="newpassword_one" v-if="editpassword">
+</div>
+<!-- end new1 password -->
+   <!-- new2 password -->
+   	<div class="input-group input-group-sm mb-3" >
+  <div class="input-group-prepend" v-if="editpassword">
+    <span class="input-group-text" id="inputGroup-sizing-sm">new</span>
+  </div>
+  <input type="password" class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm"  v-model="newpassword_two" v-if="editpassword">
+</div>
+<!-- end new2 password -->
+    <button v-if="editpassword" v-on:click="updatePassword(userid,oldpassword,newpassword_one,newpassword_two,user.username)" class="btn btn-outline-secondary" type="button">uodate</button>
+  </div>
+
+</div>
+</div>
+</div>
+
+
 </div>
 {%endblock%}
 
 {%block script%}
+
   <script >
   new Vue({
   	delimiters: ['[[', ']]'],
@@ -180,22 +233,42 @@
   data:{
   	profile:'welcome',
   	usernameedit:false,
+  	editfirstname:false,
+  	editsecondname:false,
+  	editthirdname:false,
+  	editphone:false,
+  	editemial:false,
+  	editaddress:false,
+  	editusername:false,
+  	editpassword:false,
   	username:'',
+  	firstname:'',
+  	secondname:'',
+  	thirdname:'',
+  	phone:'',
+  	address:'',
+  	email:'',
+  	privillage:'',
+  	position:'',
   	userid:'',
   	employees:'',
+  	password:'',
   	users:'',
+  	oldpassword:'',
+  	newpassword_one:'',
+  	newpassword_two:'',
+  	error:'',
+  	passerror:'',
   },methods:{
-  	updateUser:function(id,input,str){
-  		alert(id)
-  		alert(input)
-  		alert(str)
-
+  	updateUser:function(id){
+ 
   		   // updating editing item
-        this.$http.put('/api/user/'+id+'/',{str:input
+        this.$http.put('/api/user/'+id+'/',{
         })
        .then(function(response){
         // this.items=response.data
         this.title=response.data
+        ;
         this.usernameedit=false;
 
         this.getUser()
@@ -206,19 +279,47 @@
        })
 
   	},
-  	updateEmployee:function(id,input,str){
+  	updateEmployee:function(id,firstname,secondname,thirdname,phone,email,position,address,privillage,user,company,editstate){
   			   // updating editing item
-        this.$http.put('/api/employee/'+id+'/',{str:input
+        this.$http.put('/api/employee/'+id+'/',{'employee_firstname':firstname,'employee_privillage':privillage,'employee_position':position,'employee_phone':phone,'company':company,'user':user,'employee_email':email,'employee_secondname':secondname,'employee_thirdname':thirdname,'employee_address':address
         })
        .then(function(response){
         // this.items=response.data
         this.title=response.data
+        // $.notify(this.title,'info');
+        if(editstate=='firstname')this.editfirstname=false;
+        else if(editstate=='secondname')this.editsecondname=false;
+        else if(editstate=='thirdname')this.editthirdname=false;
+        else if(editstate=='email')this.editemial=false;
+        else if(editstate=='address')this.editaddress=false;
+        else if(editstate=='phone')this.editphone=false;
+  
+
         this.getEmployee()
 
        })
        .catch(function(error){
         this.title='error getting items'
        })
+  	},
+  	enableEdit:function(editstate){
+  		if(editstate=='firstname')this.editfirstname=!this.editfirstname;
+        else if(editstate=='secondname')this.editsecondname=!this.editsecondname;
+        else if(editstate=='thirdname')this.editthirdname=!this.editthirdname;
+        else if(editstate=='email')this.editemial=!this.editemial;
+        else if(editstate=='address')this.editaddress=!this.editaddress;
+        else if(editstate=='phone')this.editphone=!this.editphone;
+  	},
+  	change:function(editstate){
+  		if('username'==editstate)this.editusername=true;
+  		else if('password'==editstate)this.editpassword=true;
+  	},closeEditInput:function(){
+  		this.editpassword=false;
+  		this.editusername=false;
+  		this.username='';
+  		this.oldpassword='';
+        this.newpassword_two='';
+        this.newpassword_one='';
   	}
   	,
     getuserid:function(){
@@ -257,6 +358,83 @@
     		this.usernameedit = true;
 
     	}
+
+    },updateUsername(id,username){
+    	// alert(id)
+    	// alert(username)
+     this.$http.put('/username/'+id+'/'+username+'/',{'username':username
+        })
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        if(this.title == 'bad'){this.error=this.username+' exits, Try different username';
+        $.notify(this.error,'error');
+    }
+        else{
+
+        	this.error='';
+        	this.editusername=false;
+        	$.notify('successfuly changed username','success');
+        	// info == blue
+        	// success == green
+        	// error == red
+        	// warn == yellow
+        }
+        this.username='';
+        
+        // $.notify('succe');
+        this.getUser()
+        
+
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+
+    },updatePassword(id,oldpass,newo,newt,username){
+    	// alert(id)
+    	// alert(username)
+     this.$http.put('/userpass/'+id+'/'+oldpass+'/'+newo+'/'+newt+'/'+username+'/',{'password':newo
+        })
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+
+        if(this.title == 'badold'){
+        	
+        	this.passerror='wrong old password'
+        	// this.oldpassword='';
+        	$.notify(this.passerror,'error');
+        }
+        else if (this.title == 'notmatched'){
+        	this.passerror='unmatched new passwords'
+        	// this.newpassword_two='';
+        	// this.newpassword_one='';
+        	$.notify(this.passerror,'error');
+        }
+
+        else{
+        this.editpassword=false;
+        this.passerror='';
+        $.notify('successfuly changed password','success');
+		
+
+        
+        
+        }
+        this.oldpassword='';
+        this.newpassword_two='';
+        this.newpassword_one='';
+
+        
+        
+        
+
+
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
 
     }
 

@@ -100,6 +100,24 @@ body {
 </style>
 
 {%endblock%}
+{%block inputsearch%}
+
+   <div id="searchproduct">
+    
+    <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow row ">
+      <a class="navbar-brand col-2 col-sm-2 col-md-2 col-lg-2  mr-0 " href="#">Oceanic : {{user.username}}
+      </a>
+      <input class="form-control form-control-dark col-5 col-sm-5 col-md-8 col-lg-8 w-100" type="text" placeholder="Search" aria-label="Search" v-model="searchfileditem" v-on:keyup.enter="getItems">
+      <button class='btn btn-outline-secondary my-2 my-sm-0 col-2 col-sm-2 col-md-1 col-lg-1' v-cloak v-on:click.prevent="getItems()">search</button>
+      <ul class="navbar-nav px-3 col-3 col-sm-3 col-md-1 col-lg-1">
+        <li class="nav-item text-nowrap ">
+          <a class="nav-link" href="/login/">Sign out</a>
+        </li>
+      </ul>
+    </nav>
+
+  </div>
+    {%endblock%}
 
 {%block content%}
 
@@ -125,12 +143,12 @@ body {
       </div>
 
       <div class="form-label-group">
-        <input type="text" id="inputnumberofpackage" class="form-control" placeholder="Allowed Discount"   autofocus v-model="itemdiscount">
+        <input type="number" id="inputnumberofpackage" class="form-control" placeholder="Allowed Discount"   autofocus v-model="itemdiscount">
         <label for="inputnumberofpackage">Allowed Discount </label>
       </div>
 
       <div class="form-label-group">
-        <input type="text" id="inputitemprice" class="form-control" placeholder="Procuct Price"   autofocus v-model="itemprice">
+        <input type="number" id="inputitemprice" class="form-control" placeholder="Procuct Price"   autofocus v-model="itemprice">
         <label for="inputitemprice">Product Price</label>
       </div>
 
@@ -147,12 +165,12 @@ body {
   </div>
 
   <div class="form-label-group">
-        <input type="text" id="inputnumberdiscount" class="form-control" placeholder=" Number of Packages"   autofocus v-model="numberofpackage">
+        <input type="number" id="inputnumberdiscount" class="form-control" placeholder=" Number of Packages"   autofocus v-model="numberofpackage">
         <label for="inputnumberdiscount">Number of Packages</label>
       </div>
 
     <div class="form-label-group">
-        <input type="text" id="inputitemperpackage" class="form-control" placeholder=" Item in Package"   autofocus v-model="itemsinpackage">
+        <input type="number" id="inputitemperpackage" class="form-control" placeholder=" Item in Package"   autofocus v-model="itemsinpackage">
         <label for="inputitemperpackage">Item in Package </label>
       </div>
 
@@ -162,10 +180,13 @@ body {
 
 
       <div class="form-label-group">
-        <input type="text" id="inputitemquantity2" class="form-control" placeholder=" Quantity" v-model='itemsize'  autofocus v-bind:value="computedsize">
+        <input type="number" id="inputitemquantity2" class="form-control" placeholder=" Quantity" v-model='itemsize'  autofocus >
         <label for="inputitemquantity2">Quantity </label>
       </div>
-
+          <div class="form-label-group">
+        <input type="number" id="inputitemquantity3" class="form-control" placeholder=" Max Quantity Before Alert" v-model='alertmaxquantity'  autofocus >
+        <label for="inputitemquantity3">Max Quantity Before Alert </label>
+      </div>
       <div class="form-label-group">
         <input type="text" id="inputitemmanufucture" class="form-control" placeholder="Product manufucturer"   autofocus v-model="itemmanufucture">
         <label for="inputitemmanufucture">Product Manufucturer</label>
@@ -194,6 +215,7 @@ body {
       
       
   </li>
+  
 
 </ul> 
 <div style="max-height: 500px;
@@ -202,8 +224,9 @@ body {
 
    <ul class="list-group">
 
-
-      <li class="list-group-item d-flex justify-content-between lh-condensed" style="margin-top:10px" v-for="item in items" v-on:dblclick="editItem(item.store,item.id,item.item_name,item.item_size,item.item_price,item.item_manufucture,item.item_discount,item.item_package_name,item.item_package_quantity,item.item_per_package)" v-cloak>
+<!-- class="list-group-item d-flex justify-content-between lh-condensed bg-dark"
+ -->     
+  <li  style="margin-top:10px" v-for="item in items" v-on:dblclick="editItem(item.store,item.id,item.item_name,item.item_size,item.item_price,item.item_manufucture,item.item_discount,item.item_package_name,item.item_package_quantity,item.item_per_package,item.item_minimum_allowed_quantity)" v-cloak v-bind:class="{'list-group-item':true,'d-flex':true,'justify-content-between':true,'lh-condensed':true,'bg-info':(item.item_size<=item.item_minimum_allowed_quantity)}" >
 
               <div> 
           <h6  class="my-0" v-cloak> [[item.item_name]] </h6>
@@ -250,7 +273,36 @@ var cookie = Cookies.get('csrftoken');
 
 // });
 
-    new Vue({
+wm = new Vue({
+  delimiters: ['[[', ']]'],
+  el: '#searchproduct',
+  data:{
+    searchfileditem:'',
+    title:''
+  }
+  ,methods:{
+    getItems:function(){
+      let api_url='/api/item';
+      if(this.searchfileditem!==''||this.searchfileditem!==null){
+        api_url='/api/item/?search='+this.searchfileditem;
+      }
+
+     this.$http.get(api_url)
+     .then(function(response){
+
+      vms.items=response.data
+      // this.alertOnMininumIrem(this.items)
+     })
+     .catch(function(error){
+      this.title='error getting items'
+     })
+    },
+
+  }
+
+})
+
+  vms=  new Vue({
   delimiters: ['[[', ']]'],
   el: '#product',
   data: {
@@ -261,6 +313,7 @@ var cookie = Cookies.get('csrftoken');
     itemprice:'',
     itemmanufucture:'',
     itemcolor:'',
+    alertmaxquantity:0,
     // itemsize:'',
     computedsize:'',
     itemdiscount:0,
@@ -277,7 +330,7 @@ var cookie = Cookies.get('csrftoken');
     checkSubmitItemForm:function(e){  
       if(this.edit){
         // updating editing item
-        this.$http.put('/api/item/'+this.currenteditid+'/',{'item_name':this.itemname,'item_price':this.itemprice,'item_size':this.itemsize,'item_manufucture':this.itemmanufucture,'store':this.store,'item_discount':this.itemdiscount,'item_package_name':this.packagename,'item_package_quantity':this.numberofpackage,'item_per_package':this.itemsinpackage})
+        this.$http.put('/api/item/'+this.currenteditid+'/',{'item_name':this.itemname,'item_price':this.itemprice,'item_size':this.itemsize,'item_manufucture':this.itemmanufucture,'store':this.store,'item_discount':this.itemdiscount,'item_package_name':this.packagename,'item_package_quantity':this.numberofpackage,'item_per_package':this.itemsinpackage,'item_minimum_allowed_quantity':this.alertmaxquantity})
        .then(function(response){
         // this.items=response.data
         this.title=response.data
@@ -290,6 +343,7 @@ var cookie = Cookies.get('csrftoken');
          this.packagename='';
          this.itemsinpackage=0;
          this.numberofpackage=0;
+         this.alertmaxquantity=0;
          this.store='';
          this.getItems();
         
@@ -302,7 +356,7 @@ var cookie = Cookies.get('csrftoken');
 
       }  else{
     // this.$http.headers.common['X-CSRF-TOKEN']="{{csrf_token}}"
-        this.$http.post('/api/item/',{'item_name':this.itemname,'item_price':this.itemprice,'item_size':this.itemsize,'item_manufucture':this.itemmanufucture,'store':this.store,'item_discount':this.itemdiscount,'item_package_name':this.packagename,'item_package_quantity':this.numberofpackage,'item_per_package':this.itemsinpackage})
+        this.$http.post('/api/item/',{'item_name':this.itemname,'item_price':this.itemprice,'item_size':this.itemsize,'item_manufucture':this.itemmanufucture,'store':this.store,'item_discount':this.itemdiscount,'item_package_name':this.packagename,'item_package_quantity':this.numberofpackage,'item_per_package':this.itemsinpackage,'item_minimum_allowed_quantity':this.alertmaxquantity})
        .then(function(response){
         // this.items=response.data
         this.title=response.data
@@ -315,6 +369,7 @@ var cookie = Cookies.get('csrftoken');
          this.packagename='';
          this.itemsinpackage=0;
          this.numberofpackage=0;
+         this.alertmaxquantity=0;
          this.store='';
          this.getItems();
 
@@ -333,12 +388,13 @@ var cookie = Cookies.get('csrftoken');
      this.$http.get('/api/item')
      .then(function(response){
       this.items=response.data
+      this.alertOnMininumIrem(this.items)
      })
      .catch(function(error){
       this.title='error getting items'
      })
     },
-    editItem:function(store,id,name,qunatity,price,mauufucture,discount,packagename,numberofpackage,iteminpackage){
+    editItem:function(store,id,name,qunatity,price,mauufucture,discount,packagename,numberofpackage,iteminpackage,alertmaxquantity){
          this.store=store;
          this.currenteditid=id;
          this.button_create_edit="Edit Product";
@@ -351,6 +407,7 @@ var cookie = Cookies.get('csrftoken');
          this.packagename=packagename;
          this.itemsinpackage=iteminpackage;
          this.numberofpackage=numberofpackage;
+         this.alertmaxquantity=alertmaxquantity;
     },
     deleteItem:function(id){
       this.$http.delete('/api/item/'+id+'/')
@@ -363,6 +420,22 @@ var cookie = Cookies.get('csrftoken');
        .catch(function(error){
         this.title='error getting items'
        })
+
+    }
+    ,alertOnMininumIrem:function(items){
+
+        var sms='';
+      $.each(items, function(key, value) {
+           if(value.item_size<=value.item_minimum_allowed_quantity){
+            sms+='remaining ';
+            sms+=value.item_size;
+            sms+=' ';
+            sms+=value.item_name;
+            sms+=value.item_size>1?'s':'';
+            $.notify(sms ,'info');
+             }
+             sms='';
+         });
 
     }
     ,

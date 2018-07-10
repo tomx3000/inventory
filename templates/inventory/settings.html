@@ -222,17 +222,21 @@
     	  <ul class="list-group">
      
    <li class="list-group-item d-flex justify-content-between lh-condensed" v-cloak v-for="employee in employees" v-on:dblclick="editEmployee(employee.id,employee.employee_firstname,employee.employee_privillage,employee.employee_position,employee.employee_phone,employee.company,employee.user)">
-        <div>
+        <div class="container">
         <h4  class="my-0" v-cloak>  [[employee.employee_firstname]] </h4>
         <small class="text-muted" v-cloak> [[employee.employee_phone]] </small>
       </div>
-      <div>
+      <div class="container">
       <h4 class="my-0" v-cloak> [[employee.employee_position]] </h4>
       <small class="text-muted" v-cloak> [[toStringPriviilage(employee.employee_privillage)]] </small>
         
       </div>
+      <div class="container">
+      	 <i id="trashitem" class="fa fa-unlock fa-2x pull-right" v-on:click="passwordReset(employee.user)"></i>
 
-       <i id="trashitem" class="fa fa-trash fa-2x pull-right" v-on:click="deleteEmployee(employee.id)"></i>
+      	 <i id="trashitem" class="fa fa-trash fa-2x center" v-on:click="deleteEmployee(employee.id)"></i>
+      </div>
+      
       
       
   </li>
@@ -290,6 +294,7 @@ new Vue({
   	currentuserid:'',
   	  },
   methods:{
+
   	// company control code
   	checkSubmitCompanyForm:function(e){  
       if(this.company){
@@ -555,6 +560,7 @@ new Vue({
        })
         
       }  else{
+      	$.notify('Adding Employee','info');
         this.$http.post('/api/employee/',{'company':this.companyid,'employee_position':this.employeeposition,'employee_privillage':this.employeeprivillage,'employee_firstname':this.employeefirstname,'employee_phone':this.employeephone})
 
 
@@ -568,6 +574,7 @@ new Vue({
     	this.employeeposition='';
     	this.employeephone='';
     	this.employecompany='';
+    	$.notify('Employee Added','success');
     	this.getEmployee();
         
        })
@@ -578,7 +585,19 @@ new Vue({
       }         
         
       e.preventDefault();
-    },
+    },passwordReset:function(id){
+    	$.notify('reseting password','info');
+    	this.$http.get('/resetpass/'+id+'/')
+     .then(function(response){
+      this.title=response.data
+      $.notify('password reset complete','success');
+      
+     })
+     .catch(function(error){
+      this.title='error getting items'
+     })
+    }
+    ,
     getEmployee:function(){
      this.$http.get('/api/employee')
      .then(function(response){

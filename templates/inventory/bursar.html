@@ -3,17 +3,478 @@
 {%extends 'home/base.html'%}
 
 {%block style%}
+<style type="text/css">
+	    :root {
+  --input-padding-x: .75rem;
+  --input-padding-y: .75rem;
+}
 
+html,
+body {
+  height: 100%;
+}
+
+/*body {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center;
+  align-items: center;
+  padding-top: 40px;
+  padding-bottom: 40px;
+  background-color: #f5f5f5;
+}*/
+
+.form-signin {
+  width: 100%;
+  max-width: 420px;
+  padding: 15px;
+  margin: auto;
+}
+
+.form-label-group {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.form-label-group > input,
+.form-label-group > label {
+  padding: var(--input-padding-y) var(--input-padding-x);
+}
+
+.form-label-group > label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 100%;
+  margin-bottom: 0; /* Override default `<label>` margin */
+  line-height: 1.5;
+  color: #495057;
+  border: 1px solid transparent;
+  border-radius: .25rem;
+  transition: all .1s ease-in-out;
+}
+
+.form-label-group input::-webkit-input-placeholder {
+  color: transparent;
+}
+
+.form-label-group input:-ms-input-placeholder {
+  color: transparent;
+}
+
+.form-label-group input::-ms-input-placeholder {
+  color: transparent;
+}
+
+.form-label-group input::-moz-placeholder {
+  color: transparent;
+}
+
+.form-label-group input::placeholder {
+  color: transparent;
+}
+
+.form-label-group input:not(:placeholder-shown) {
+  padding-top: calc(var(--input-padding-y) + var(--input-padding-y) * (2 / 3));
+  padding-bottom: calc(var(--input-padding-y) / 3);
+}
+
+.form-label-group input:not(:placeholder-shown) ~ label {
+  padding-top: calc(var(--input-padding-y) / 3);
+  padding-bottom: calc(var(--input-padding-y) / 3);
+  font-size: 12px;
+  color: #777;
+}
+
+
+}
+
+
+</style>
 {%endblock%}
+{%block inputsearch%}
+
+   <div id="searchexpense">
+    
+    <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow row ">
+      <a class="navbar-brand col-2 col-sm-2 col-md-2 col-lg-2  mr-0 " href="#">Oceanic : {{user.username}}
+      </a>
+      <input class="form-control form-control-dark col-5 col-sm-5 col-md-8 col-lg-8 w-100" type="text" placeholder="Search" aria-label="Search" v-model="searchfiledexpense" v-on:keyup.enter="getExpense">
+      <button class='btn btn-outline-secondary my-2 my-sm-0 col-2 col-sm-2 col-md-1 col-lg-1' v-cloak v-on:click.prevent="getExpense()">search</button>
+      <ul class="navbar-nav px-3 col-3 col-sm-3 col-md-1 col-lg-1">
+        <li class="nav-item text-nowrap ">
+          <a class="nav-link" href="/login/">Sign out</a>
+        </li>
+      </ul>
+    </nav>
+
+  </div>
+    {%endblock%}
 
 {%block content%}
+<div id='bursar'>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom" id="search">
+	<h1 v-cloak>Balance: [[accountamount]] Tsh</h1>
 
-<h1>Expense</h1>
+	<div class="dropdown pull-right" v-for="employee in employees" v-if="employee.user == expenseuser && employee.employee_privillage<=2">
+		  <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+<!-- 		   <span data-feather="calendar"></span>
+ -->		                Expenses
+		  </button>
+		  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+		    <a class="dropdown-item" href="#" v-on:click="filterExpense('all')">All</a>
+		    <a class="dropdown-item" href="#" v-on:click="filterExpense('personal')">Personal </a>
+		   
+
+		  </div>
+			</div>
+
+
+	
+</div>
+
+
+
+<div class="row">
+<div class="col-lg-8 col-md-8 col-sm-12 col-12">
+             <form class="form-signin" v-on:submit="checkSubmitExpense">
+    {% csrf_token %}
+
+
+
+      <div class="form-label-group">
+        <input type="text" id="inputexpensename" class="form-control" placeholder=" Spent On"  required autofocus v-model="expensename">
+        <label for="inputexpensename">Spent On </label>
+      </div>
+
+      <div class="form-label-group">
+        <input type="text" id="inputexpensereceiver" class="form-control" placeholder="Received Payment"   autofocus v-model="expensereceiver">
+        <label for="inputexpensereceiver">Received Payment </label>
+      </div>
+
+
+
+  <div class="form-label-group">
+        <textarea id="inputexpensedescription" class="form-control" placeholder="Extra Details"   autofocus v-model="expensedescription"> </textarea>
+<!--         <label for="inputexpensedescription">Extra Details</label>
+ -->      </div>
+
+    <div class="form-label-group">
+        <input type="number" id="inputexpenseamount" class="form-control" placeholder=" Amount Spent"   autofocus v-model="expenseamount">
+        <label for="inputexpenseamount">Amount Spent </label>
+      </div>
+
+      <button class="btn btn-lg btn-dark btn-block" type="submit" v-cloak>[[button_create_edit_expense]]</button>
+      <!-- <p class="mt-5 mb-3 text-muted text-center">&copy; 2017-2018</p> -->
+    </form>
+  
+</div>
+<div class="col-lg-4 col-md-4 col-sm-12 col-12" v-if="!viewallexpenses">
+
+<div style="max-height: 600px;
+  overflow-y: auto;
+  overflow-x: auto;
+  ">
+
+<div class="card  bg-light mb-3" style="max-width: 18rem;" v-for="expense in expenses" v-cloak v-on:dblclick="editExpense(expense.id,expense.expense_user,expense.expense_account,expense.expense_item,expense.expense_receiver,expense.expense_amount,expense.expense_description)" v-if="expense.expense_user == expenseuser">
+  <div class="card-header" v-cloak>
+  On [[parseDate(expense.created_at)]],I paid for
+  [[expense.expense_item]]
+  <button type="button" class="close" aria-label="Close" v-on:click="deleteExpenses(expense.id,expense.expense_account,expense.expense_amount)">
+   <span aria-hidden="true">&times;</span>
+	   </button>
+
+  </div>
+  <div class="card-body">
+    <h5 class="card-title" v-cloak>[[expense.expense_amount]]</h5>
+    <p class="card-text" v-cloak>[[expense.expense_description]]</p>
+  </div>
+</div>
+</div>
+
+  
+</div>
+  
+
+</div>
+
+<div class="row" v-if="viewallexpenses" style="max-height: 400px; overflow-x:auto;overflow-y: auto; ">
+
+<div class="card  bg-light mb-3 col-lg-3 col-md-3 col-sm-12 col-12 " style="max-width: 18rem;" v-for="expense in expenses" v-cloak v-on:dblclick="editExpense(expense.id,expense.expense_user,expense.expense_account,expense.expense_item,expense.expense_receiver,expense.expense_amount,expense.expense_description)">
+  <div class="card-header" v-cloak v-for="employee in employees" v-if="employee.user==expense.expense_user">
+  On [[parseDate(expense.created_at)]],<font class='text-primary'> [[employee.employee_firstname]] </font>  paid for
+  [[expense.expense_item]]
+  <button type="button" class="close" aria-label="Close" v-on:click="deleteExpenses(expense.id,expense.expense_account,expense.expense_amount)" v-if="expense.expense_user ==expenseuser" >
+   <span aria-hidden="true">&times;</span>
+	   </button>
+
+  </div>
+  <div class="card-body">
+    <h5 class="card-title" v-cloak>[[expense.expense_amount]]</h5>
+    <p class="card-text" v-cloak>[[expense.expense_description]]</p>
+  </div>
+</div>
+
+  
+	
+</div>
+
+
+</div>
 {%endblock%}
 
 {%block script%}
   <script >
 
+wm = new Vue({
+  delimiters: ['[[', ']]'],
+  el: '#searchexpense',
+  data:{
+    searchfileditem:'',
+    title:''
+  }
+  ,methods:{
+    getExpense:function(){
+      let api_url='/api/expense';
+      if(this.searchfiledexpense!==''||this.searchfiledexpense!==null){
+        api_url='/api/expense/?search='+this.searchfiledexpense;
+      }
+
+     this.$http.get(api_url)
+     .then(function(response){
+
+      vmex.expenses=response.data
+      // this.alertOnMininumIrem(this.items)
+     })
+     .catch(function(error){
+      this.title='error getting items'
+     })
+    },
+
+  }
+
+})
+
+ vmex=new Vue({
+  delimiters: ['[[', ']]'],
+  el: '#bursar',
+  data:{
+  	expense:'Cash Book',
+  	expenseamount:'',
+  	expensedescription:'',
+  	expensereceiver:'',
+  	expensename:'',
+  	expenses:'',
+  	button_create_edit_expense:'New Expense',
+  	edit:false,
+  	currentexpenseid:'',
+  	expenseaccount:'',
+	expenseuser:'',
+	accountamount:'',
+	viewallexpenses:false,
+	employees:'',
+	adjusted_val_tobeupdate:'',
+
+  },
+  methods:{
+  	filterExpense:function(val){
+  		if(val == 'all')this.viewallexpenses=true;
+  		else this.viewallexpenses=false;
+
+  		this.getExpenses()
+  	},
+  	parseDate:function(date){
+  		
+  		return moment(date).format('LL')
+
+  	},
+  	checkSubmitExpense:function(e){
+
+  		
+  			if(this.edit){
+        // updating editing item
+       this.updateAccountOnEditExpense(this.currentexpenseid,this.expenseamount)
+       if(this.accountamount< this.adjusted_val_tobeupdate){
+       	$.notify('No Enough Cash ','error');
+
+       }else{
+       this.$http.put('/api/expense/'+this.currentexpenseid+'/',{'expense_item':this.expensename,'expense_receiver':this.expensereceiver,'expense_description':this.expensedescription,'expense_amount':this.expenseamount,'expense_account':this.expenseaccount,'expense_user':this.expenseuser})
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        this.edit=false;
+        this.expensename='';
+		this.expensereceiver='';
+		this.expensedescription='';
+		this.expenseamount='';
+
+         this.getExpenses();
+        
+         this.button_create_edit_expense="New Expense";
+       })
+       .catch(function(error){
+        this.title='error getting expenses'
+       })
+        
+
+       }
+
+
+      }  else{
+    // this.$http.headers.common['X-CSRF-TOKEN']="{{csrf_token}}"
+    if(this.accountamount<this.expenseamount){
+  			$.notify('No Enough Cash','error');
+
+  		}else{
+
+  			        this.$http.post('/api/expense/',{'expense_item':this.expensename,'expense_receiver':this.expensereceiver,'expense_description':this.expensedescription,'expense_amount':this.expenseamount,'expense_account':this.expenseaccount,'expense_user':this.expenseuser})
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        this.updateAccountOnCreateExpense(this.expenseaccount,this.expenseamount)
+         // this.getSales()
+         this.expensename='';
+		this.expensereceiver='';
+		this.expensedescription='';
+		this.expenseamount='';
+         this.getExpenses();
+
+        // alert('response')
+       })
+       .catch(function(error){
+        this.title='error getting expenses'
+       })
+
+      } 
+
+  		
+
+  		}
+
+  		        
+        
+      e.preventDefault();
+  	},getExpenses:function(){
+     this.$http.get('/api/expense')
+     .then(function(response){
+      this.expenses=response.data
+     })
+     .catch(function(error){
+      this.title='error getting expenses'
+     })
+    },getAccount:function(){
+     this.$http.get('/api/account')
+     .then(function(response){
+      this.account=response.data
+
+      id=0
+      $.each(this.account, function(key, value) {
+			
+				   id=value.id;
+				   amount=value.account_amount;
+
+				 });	
+
+      this.expenseaccount=id;
+      this.accountamount=amount;
+     })
+     .catch(function(error){
+      this.title='error getting expenses'
+     })
+    },getUser:function(){
+     this.$http.get('/api/company')
+     .then(function(response){
+      this.expenseuser=response.data.userid
+     })
+     .catch(function(error){
+      this.title='error getting expenses'
+     })
+    },
+    getEmployee:function(){
+     this.$http.get('/api/employee')
+     .then(function(response){
+      this.employees=response.data
+     })
+     .catch(function(error){
+      this.title='error getting users'
+     })
+    },
+    editExpense:function(id,user,account,expensename,expensereceiver,expenseamount,expensedescription){
+    	if(user == this.expenseuser){
+    		this.expenseaccount=account;
+         this.expenseuser=user;
+         this.button_create_edit_expense="Edit Expense";
+         this.currentexpenseid=id;
+         this.edit=true ;
+         this.expensename=expensename;
+         this.expensereceiver=expensereceiver;
+         this.expenseamount=expenseamount;
+         this.expensedescription=expensedescription;
+    	}
+         
+    },
+    deleteExpenses:function(id,accountid,amount){
+      this.$http.delete('/api/expense/'+id+'/')
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        this.updateAccountOnDeleteExpense(accountid,amount)
+
+        this.getExpenses()
+        // alert('response')
+       })
+       .catch(function(error){
+        this.title='error deleting expenses'
+       })
+
+    },updateAccountOnCreateExpense:function(id,amount){
+	this.$http.post('/decreaseaccount/'+id+'/'+amount+'/',{'id':id})
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        // this.getSales()
+        this.getAccount()
+        // alert('response')
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+    },updateAccountOnDeleteExpense:function(id,amount){
+    	this.$http.post('/increaseaccount/'+id+'/'+amount+'/',{'id':id})
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        // this.getSales()
+        this.getAccount()
+        // alert('response')
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+    },updateAccountOnEditExpense:function(expenseid,amount){
+    	this.$http.post('/updownaccount/'+expenseid+'/'+amount+'/',{'id':id})
+       .then(function(response){
+        // this.items=response.data
+        this.adjusted_val_tobeupdate=response.data
+        // alert(this.title)
+        // this.getSales()
+        this.getAccount()
+        // alert('response')
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+    }
+
+  },beforeMount(){
+  	this.getExpenses()
+  	this.getUser()
+  	this.getAccount()
+  	this.getEmployee()
+  }
+
+})
 
   </script>
 {%endblock%}
