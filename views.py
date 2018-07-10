@@ -21,6 +21,7 @@ pathselector={1:'base',2:'base',3:'order',4:'expense',5:'counter'}
 privillage={'sales':3,'admin':1,'assistantadmin':2,'bursar':4,'godown':5}
 
 @csrf_exempt
+@login_required(login_url='/login/')
 def resetPassword(request,*args,**kargs):
 
 	user= User.objects.get(id=kargs['id'])
@@ -57,6 +58,7 @@ def resetPassword(request,*args,**kargs):
 
 
 @csrf_exempt
+@login_required(login_url='/login/')
 def ChangePassword(request,*args,**kargs):
 	user = authenticate(request, username=kargs['username'], password=kargs['oldpassword'])
 
@@ -73,6 +75,7 @@ def ChangePassword(request,*args,**kargs):
 		return HttpResponse('badold')
 
 @csrf_exempt
+@login_required(login_url='/login/')
 def ChangeUsername(request,*args,**kargs):
 	try:
 		user=User.objects.get(username=kargs['username'])
@@ -83,6 +86,7 @@ def ChangeUsername(request,*args,**kargs):
 	else:
 		return HttpResponse('bad')
 @csrf_exempt
+@login_required(login_url='/login/')
 def increaseAccount(request,*args,**kargs):
 	account=Account.objects.filter(id=kargs['id'])
 	account.update(account_amount=float(account.first().account_amount)+float(kargs['amount']))
@@ -90,12 +94,14 @@ def increaseAccount(request,*args,**kargs):
 
 
 @csrf_exempt
+@login_required(login_url='/login/')
 def decreaseAccount(request,*args,**kargs):
 	account=Account.objects.filter(id=kargs['id'])
 	account.update(account_amount=float(account.first().account_amount)-float(kargs['amount']))
 	return HttpResponse('ok')
 
 @csrf_exempt
+@login_required(login_url='/login/')
 def updateUpDownAccount(request,*args,**kargs):
 	expense=Expense.objects.filter(id=kargs['id'])
 
@@ -115,7 +121,8 @@ def updateUpDownAccount(request,*args,**kargs):
 	# print(request.POST)
 	return HttpResponse(adjustedval)
 
-@csrf_exempt	
+@csrf_exempt
+@login_required(login_url='/login/')	
 def increseItem(request,*args,**kargs):
 	item=Item.objects.filter(id=kargs['id'])
 	item.update(item_size=float(item.first().item_size)+float(kargs['quantity']))
@@ -123,6 +130,7 @@ def increseItem(request,*args,**kargs):
 	
 
 @csrf_exempt
+@login_required(login_url='/login/')
 def decreaseItem(request,*args,**kargs):
 	item=Item.objects.filter(id=kargs['id'])
 	item.update(item_size=float(item.first().item_size)-float(kargs['quantity']))
@@ -130,6 +138,7 @@ def decreaseItem(request,*args,**kargs):
 
 
 @csrf_exempt
+@login_required(login_url='/login/')
 def AcceptSale(request,*args,**kargs):
 	
 	sale=Sales.objects.filter(id=kargs['id'])
@@ -144,6 +153,7 @@ def AcceptSale(request,*args,**kargs):
 	return HttpResponse('ok')
 
 @csrf_exempt
+@login_required(login_url='/login/')
 def AuthorizeSale(request,*args,**kargs):
 	
 	sale=Sales.objects.filter(id=kargs['id'])
@@ -155,6 +165,7 @@ def AuthorizeSale(request,*args,**kargs):
 	return HttpResponse('ok')
 
 @csrf_exempt
+@login_required(login_url='/login/')
 def IssueSale(request,*args,**kargs):
 	
 	sale=Sales.objects.filter(id=kargs['id'])
@@ -166,6 +177,7 @@ def IssueSale(request,*args,**kargs):
 	return HttpResponse('ok')
 
 @csrf_exempt
+@login_required(login_url='/login/')
 def AcceptSaleAll(request,*args,**kargs):
 	sales=Sales.objects.filter(sales_received=False)
 	if sales.exists() and sales.count()>=1:
@@ -179,6 +191,7 @@ def AcceptSaleAll(request,*args,**kargs):
 	return HttpResponse('ok')
 
 @csrf_exempt
+@login_required(login_url='/login/')
 def DeclineSaleAll(request,*args,**kargs):
 	sales=Sales.objects.filter(sales_received=False)
 	if sales.exists() and sales.count()>=1:
@@ -275,7 +288,7 @@ def ViewSettings(request,*args,**kargs):
 	# less than 2 is admin
 # just testing 
 #  real <=2 i.e <= ssistantadmin
-	if request.user.employee.employee_privillage >=1:
+	if request.user.employee.employee_privillage <=privillage['assistantadmin']:
 		return render(request,'inventory/settings.html',{})
 	else:
 		return redirect(pathselector[request.user.employee.employee_privillage])
@@ -318,6 +331,7 @@ def ViewLogin(request,*args,**kargs):
 			return render(request,'inventory/login.html',{})	
 
 	elif(request.method=='GET'):
+		logout(request)
 		return render(request,'inventory/login.html',{'form':form})		
 
 
