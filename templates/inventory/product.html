@@ -127,18 +127,22 @@ body {
 <div class="col-lg-8 col-md-8 col-sm-12 col-12">
              <form class="form-signin" v-on:submit="checkSubmitItemForm">
     {% csrf_token %}
+       <div class="form-label-group">
+        <input type="file" id="inputitemfile" class="form-control" placeholder="  Choose CSV File"   autofocus v-on:change="handleFileUpload()" ref="file"  >
+<!--         <label for="inputcustomername"></label>
+ -->      </div>
 
       <div class="input-group mb-3">
     <div class="input-group-prepend">
       <label class="input-group-text" for="inputGroupSelect02">Store</label>
     </div>
-    <select v-cloak v-model="store" class="custom-select" id="inputGroupSelect02">
+    <select v-cloak v-model="store" class="custom-select" id="inputGroupSelectStore">
       <option v-bind:value="stor.id" v-for="stor in stores" v-cloak>[[stor.store_name]]</option>
     </select>
   </div>
 
       <div class="form-label-group">
-        <input type="text" id="inputitemname" class="form-control" placeholder=" Product Name"  required autofocus v-model="itemname">
+        <input type="text" id="inputitemname" class="form-control" placeholder=" Product Name"   autofocus v-model="itemname" v-bind:required="required">
         <label for="inputitemname">Product Name </label>
       </div>
 
@@ -193,7 +197,7 @@ body {
       </div>
 
   
-      <button class="btn btn-lg btn-dark btn-block" type="submit" v-cloak>[[button_create_edit]]</button>
+      <button v-bind:class="{'btn':true,'btn-lg':true,'btn-block':true,'btn-outline-primary':(button_create_edit=='New Product'),'btn-outline-dark':(button_create_edit!='New Product')}"  type="submit" v-cloak>[[button_create_edit]]</button>
       <!-- <p class="mt-5 mb-3 text-muted text-center">&copy; 2017-2018</p> -->
     </form>
   
@@ -218,7 +222,7 @@ body {
   
 
 </ul> 
-<div style="max-height: 500px;
+<div style="max-height: 600px;
   overflow-y: auto;
   overflow-x: auto;">
 
@@ -323,8 +327,9 @@ wm = new Vue({
     selectedstore:'',
     store:'',
     stores:'',
-    selectestore:'',
     button_create_edit:'New Product',
+    file:'',
+    required:true,
   },
   methods:{
     checkSubmitItemForm:function(e){  
@@ -356,7 +361,63 @@ wm = new Vue({
 
       }  else{
     // this.$http.headers.common['X-CSRF-TOKEN']="{{csrf_token}}"
-        this.$http.post('/api/item/',{'item_name':this.itemname,'item_price':this.itemprice,'item_size':this.itemsize,'item_manufucture':this.itemmanufucture,'store':this.store,'item_discount':this.itemdiscount,'item_package_name':this.packagename,'item_package_quantity':this.numberofpackage,'item_per_package':this.itemsinpackage,'item_minimum_allowed_quantity':this.alertmaxquantity})
+
+      if(this.file){
+
+                  // updating editing item
+          if(this.store){
+
+            $.notify('Creating Products','info');
+      let formData = new FormData();
+    formData.append('file', this.file);
+    formData.append('store', this.store);
+    axios.post( '/itemfile/',
+      formData,
+      {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+      }
+    ).then(function(response){
+
+     this.title=response.data
+     this.store= '';
+     this.required=true;
+     this.edit=false;
+     this.file='';
+     document.getElementById('inputitemfile').value='';
+     document.getElementById('inputGroupSelectStore').value='';
+
+         // this.button_create_edit="New Product";
+         
+       ;
+     $.notify(' Products Created','success');
+     
+     console.log('SUCCESS!!');
+
+      location.reload()
+    // this.getItems();
+
+      
+    })
+    .catch(function(){
+      // console.log('FAILURE!!');
+      this.title="error"
+    });
+
+ 
+        
+    
+
+          }else {
+            $.notify(' Select A Store','error');
+          }
+      
+
+      }else{
+
+
+         this.$http.post('/api/item/',{'item_name':this.itemname,'item_price':this.itemprice,'item_size':this.itemsize,'item_manufucture':this.itemmanufucture,'store':this.store,'item_discount':this.itemdiscount,'item_package_name':this.packagename,'item_package_quantity':this.numberofpackage,'item_per_package':this.itemsinpackage,'item_minimum_allowed_quantity':this.alertmaxquantity})
        .then(function(response){
         // this.items=response.data
         this.title=response.data
@@ -379,10 +440,20 @@ wm = new Vue({
         this.title='error getting items'
        })
 
+
+      }
+
+       
+
       }         
         
 
       e.preventDefault();
+    },
+    handleFileUpload:function(){
+      this.file = this.$refs.file.files[0];
+      this.required=false
+
     },
     getItems:function(){
      this.$http.get('/api/item')

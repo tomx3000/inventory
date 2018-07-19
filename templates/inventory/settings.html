@@ -70,7 +70,7 @@
   <div href="#" class="list-group-item list-group-item-action flex-column align-items-start " style="margin-top: 20px">
     <div class="d-flex w-100 justify-content-between">
       <h5 class="mb-1">Company</h5>
-      <small><button v-on:click="checkSubmitCompanyForm" type="submit" class="btn btn-dark">Update</button></small>
+      <small><button v-on:click="checkSubmitCompanyForm" type="submit" class="btn btn-outline-primary btn-sm">Update</button></small>
     </div>
     <p class="mb-1">
     	<form >
@@ -133,7 +133,7 @@
     <div class="d-flex w-100 justify-content-between">
       <h5 class="mb-1">Store</h5>
       <small class="text-muted">
-      <button v-on:click="checkSubmitStoreForm" type="submit" v-cloak class="btn btn-dark">[[addstorebutton]]</button></small>
+      <button v-on:click="checkSubmitStoreForm" type="submit" v-bind:class="{'btn':true,'btn-sm':true,'btn-block':true,'btn-outline-primary':(addstorebutton=='Add'),'btn-outline-dark':(addstorebutton!='Add')}" type="submit">[[addstorebutton]]</button></small>
     </div>
     <p class="mb-1">    	
     <form>
@@ -187,7 +187,7 @@
     <div class="d-flex w-100 justify-content-between">
       <h5 class="mb-1">Account</h5>
       <small class="text-muted">
-      <button type="submit" class="btn btn-dark" v-on:click="checkSubmitAccountForm">Update</button></small>
+      <button type="submit" class="btn btn-outline-primary btn-sm" v-on:click="checkSubmitAccountForm">Update</button></small>
     </div>
        <p class="mb-1">    	
     <form>
@@ -232,7 +232,7 @@
    <div href="#" class="list-group-item list-group-item-action flex-column align-items-start" style="margin-top: 20px">
     <div class="d-flex w-100 justify-content-between">
       <h5 class="mb-1">Employees</h5>
-      <small class="text-muted"><button type="submit" class="btn btn-dark" v-cloak v-on:click="checkSubmitEmployeeForm">[[addemployeebutton]]</button></small>
+      <small class="text-muted"><button type="submit" v-bind:class="{'btn':true,'btn-sm':true,'btn-block':true,'btn-outline-primary':(addemployeebutton=='Add'),'btn-outline-dark':(addemployeebutton!='Add')}" v-cloak v-on:click="checkSubmitEmployeeForm">[[addemployeebutton]]</button></small>
     </div>
     <p class="mb-1">    	
     <form>

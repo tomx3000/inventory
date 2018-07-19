@@ -118,7 +118,7 @@ body {
 	<h1 v-cloak>Balance: [[accountamount]] Tsh</h1>
 
 	<div class="dropdown pull-right" v-for="employee in employees" v-if="employee.user == expenseuser && employee.employee_privillage<=2">
-		  <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+		  <button class="btn btn-outline-dark dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 <!-- 		   <span data-feather="calendar"></span>
  -->		                Expenses
 		  </button>
@@ -165,7 +165,7 @@ body {
         <label for="inputexpenseamount">Amount Spent </label>
       </div>
 
-      <button class="btn btn-lg btn-dark btn-block" type="submit" v-cloak>[[button_create_edit_expense]]</button>
+      <button v-bind:class="{'btn':true,'btn-lg':true,'btn-block':true,'btn-outline-primary':(button_create_edit_expense=='New Expense'),'btn-outline-dark':(button_create_edit_expense!='New Expense')}" type="submit" v-cloak>[[button_create_edit_expense]]</button>
       <!-- <p class="mt-5 mb-3 text-muted text-center">&copy; 2017-2018</p> -->
     </form>
   
