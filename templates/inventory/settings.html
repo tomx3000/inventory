@@ -30,14 +30,47 @@
     {%endblock%}
 
 {%block content%}
+
 <div id="settings">
+
+<!-- Demo $$$$$$$$$$$$$$$$$$$$$$$-->
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Are You Sure </h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body ">
+      	<p v-cloak>Deleteing [[nametobedeleted]] will erase all traces </p>
+        
+
+      </div>
+      <div class="modal-footer">
+   <button type="button" class="btn btn-secondary btn-lg" data-dismiss="modal" v-on:click="deleteEmployee()" >Yes</button>
+        <button type="button" class="btn btn-primary btn-lg" data-dismiss="modal" v-on:click="stopDelete()">No</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- end demo $$$$$$$$$$$$$$$$$$$$$$$$$$$$ -->
+
+
 	<h1 v-cloak>[[settings]]</h1>
 
 <div class="list-group container">
   <div href="#" class="list-group-item list-group-item-action flex-column align-items-start " style="margin-top: 20px">
     <div class="d-flex w-100 justify-content-between">
       <h5 class="mb-1">Company</h5>
-      <small><button v-on:click="checkSubmitCompanyForm" type="submit" class="btn btn-dark">Update</button></small>
+      <small><button v-on:click="checkSubmitCompanyForm" type="submit" class="btn btn-outline-primary btn-sm">Update</button></small>
     </div>
     <p class="mb-1">
     	<form >
@@ -73,7 +106,7 @@
    <small class="text-muted">
     	  <ul class="list-group">
      
-   <li class="list-group-item d-flex justify-content-between lh-condensed" v-for="comp in company" v-cloak v-on:dblclick="editCompany(comp.id,comp.company_name,comp.company_address,comp.company_email,comp.company_phone)">
+   <li class="list-group-item d-flex justify-content-between lh-condensed" v-for="comp in company" v-cloak v-on:dblclick="editCompany(comp.id,comp.company_name,comp.company_address,comp.company_email,comp.company_phone)" style="overflow: auto;">
         <div>
         <h4  class="my-0" v-cloak>  [[comp.company_name]] </h4>
         <small class="text-muted" v-cloak> [[comp.company_phone]] </small>
@@ -100,7 +133,7 @@
     <div class="d-flex w-100 justify-content-between">
       <h5 class="mb-1">Store</h5>
       <small class="text-muted">
-      <button v-on:click="checkSubmitStoreForm" type="submit" v-cloak class="btn btn-dark">[[addstorebutton]]</button></small>
+      <button v-on:click="checkSubmitStoreForm" type="submit" v-bind:class="{'btn':true,'btn-sm':true,'btn-block':true,'btn-outline-primary':(addstorebutton=='Add'),'btn-outline-dark':(addstorebutton!='Add')}" type="submit">[[addstorebutton]]</button></small>
     </div>
     <p class="mb-1">    	
     <form>
@@ -133,7 +166,7 @@
     	  <ul class="list-group">
      
    <li class="list-group-item d-flex justify-content-between lh-condensed" v-cloak v-for="store in stores" v-on:dblclick="editStore
-(store.company,store.id,store.store_name,store.store_address,store.store_email,store.store_phone)">
+(store.company,store.id,store.store_name,store.store_address,store.store_email,store.store_phone)" style="overflow: auto;">
         <div>
         <h4  class="my-0" v-cloak>  [[store.store_name]] </h4>
         <small class="text-muted" v-cloak> [[store.store_phone]] </small>
@@ -154,7 +187,7 @@
     <div class="d-flex w-100 justify-content-between">
       <h5 class="mb-1">Account</h5>
       <small class="text-muted">
-      <button type="submit" class="btn btn-dark" v-on:click="checkSubmitAccountForm">Update</button></small>
+      <button type="submit" class="btn btn-outline-primary btn-sm" v-on:click="checkSubmitAccountForm">Update</button></small>
     </div>
        <p class="mb-1">    	
     <form>
@@ -178,7 +211,7 @@
     <small class="text-muted">
     	  <ul class="list-group">
      
-   <li class="list-group-item d-flex justify-content-between lh-condensed" v-cloak v-for="acc in account" v-on:dblclick="editAccount(acc.account_user,acc.account_company,acc.id,acc.account_name,acc.account_amount)">
+   <li class="list-group-item d-flex justify-content-between lh-condensed" v-cloak v-for="acc in account" v-on:dblclick="editAccount(acc.account_user,acc.account_company,acc.id,acc.account_name,acc.account_amount)" style="overflow: auto;">
         <div>
         <h4  class="my-0" v-cloak >  [[acc.account_name]] </h4>
 <!--         <small class="text-muted" > Quantity </small>
@@ -199,7 +232,7 @@
    <div href="#" class="list-group-item list-group-item-action flex-column align-items-start" style="margin-top: 20px">
     <div class="d-flex w-100 justify-content-between">
       <h5 class="mb-1">Employees</h5>
-      <small class="text-muted"><button type="submit" class="btn btn-dark" v-cloak v-on:click="checkSubmitEmployeeForm">[[addemployeebutton]]</button></small>
+      <small class="text-muted"><button type="submit" v-bind:class="{'btn':true,'btn-sm':true,'btn-block':true,'btn-outline-primary':(addemployeebutton=='Add'),'btn-outline-dark':(addemployeebutton!='Add')}" v-cloak v-on:click="checkSubmitEmployeeForm">[[addemployeebutton]]</button></small>
     </div>
     <p class="mb-1">    	
     <form>
@@ -236,10 +269,10 @@
     
   </div>
 </form></p>
-    <small class="text-muted">
-    	  <ul class="list-group">
+    <small class="text-muted container" >
+    	  <ul class="list-group container">
      
-   <li class="list-group-item d-flex justify-content-between lh-condensed" v-cloak v-for="employee in employees" v-on:dblclick="editEmployee(employee.id,employee.employee_firstname,employee.employee_privillage,employee.employee_position,employee.employee_phone,employee.company,employee.user)">
+   <li class="list-group-item d-flex justify-content-between lh-condensed container" v-cloak v-for="employee in employees" v-on:dblclick="editEmployee(employee.id,employee.employee_firstname,employee.employee_privillage,employee.employee_position,employee.employee_phone,employee.company,employee.user)" style="overflow: auto;">
         <div class="container">
         <h4  class="my-0" v-cloak>  [[employee.employee_firstname]] </h4>
         <small class="text-muted" v-cloak> [[employee.employee_phone]] </small>
@@ -252,7 +285,13 @@
       <div class="container">
       	 <i id="trashitem" class="fa fa-unlock fa-2x pull-right" v-on:click="passwordReset(employee.user)"></i>
 
-      	 <i id="trashitem" class="fa fa-trash fa-2x center" v-on:click="deleteEmployee(employee.id)"></i>
+      	 <i id="trashitem" class="fa fa-trash fa-2x center"  data-toggle="modal" data-target="#exampleModal" v-on:click="prepDelete(employee.id,employee.employee_firstname)"></i>
+
+      	 <!-- Button trigger modal -->
+<!-- <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModal" v-on:click="prepDelete(1)">
+ Delete
+ v-on:click="deleteEmployee(employee.id)"
+</button> -->
       </div>
       
       
@@ -310,6 +349,8 @@ new Vue({
   	addstorebutton:'Add',
   	storecompanyid:1,
   	currentuserid:'',
+  	tobedeleted:'',
+  	nametobedeleted:'',
   	  },
   methods:{
 
@@ -348,6 +389,15 @@ new Vue({
       }         
         
       e.preventDefault();
+    },
+    prepDelete:function(id,name){
+    this.tobedeleted=id
+    this.nametobedeleted=name
+    },
+    stopDelete:function(){
+    // alert(this.tobedeleted+' :'+this.nametobedeleted)
+    this.tobedeleted=''
+    this.nametobedeleted=''
     },
     getCompany:function(){
      this.$http.get('/api/company')
@@ -637,11 +687,14 @@ new Vue({
     	this.addemployeebutton="Edit";
     	this.editemployee=true;
     },
-    deleteEmployee:function(id){
+    deleteEmployee:function(){
+    	id=this.tobedeleted
     	 this.$http.delete('/api/employee/'+id+'/')
        .then(function(response){
         // this.items=response.data
         this.title=response.data
+        this.tobedeleted=''
+        this.nametobedeleted=''
         this.getEmployee()
         // alert('response')
        })

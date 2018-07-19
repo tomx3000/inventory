@@ -13,12 +13,13 @@ from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-
+import csv
 # Create your views here.
 
 pathselector={1:'base',2:'base',3:'order',4:'expense',5:'counter'}
 
 privillage={'sales':3,'admin':1,'assistantadmin':2,'bursar':4,'godown':5}
+# hnishael@gmail.com
 
 @csrf_exempt
 @login_required(login_url='/login/')
@@ -37,6 +38,7 @@ def resetPassword(request,*args,**kargs):
 	password=generateRoandom(8)
 
 	user.set_password(password)
+	user.save()
 	employee=Employee.objects.get(user=user.id)
 
 	admin = Employee.objects.filter(employee_privillage=1)
@@ -85,6 +87,89 @@ def ChangeUsername(request,*args,**kargs):
 		return HttpResponse('good')
 	else:
 		return HttpResponse('bad')
+
+
+@csrf_exempt
+@login_required(login_url='/login/')
+def ItemFile(request,*args,**kargs):
+
+	# with open(request.FILES['file'],'r') as csv_file:
+	csv_file=request.FILES['file']
+	print(csv_file.name.endswith('csv'))
+
+	file_data=csv_file.read().decode('utf-8')
+	lines=file_data.split('\n')
+	# line_dict=get_lines_dict(lines)
+
+	# work on this function so as to allow flexibility of csv upload
+	for counter, line in enumerate(lines):
+		if counter is 0 :
+			continue
+		fields=line.split(',')
+		
+		if(len(fields)<2):
+			print(fields)
+		else:
+			existimg_item,new_item=Item.objects.get_or_create(store=Store.objects.get(id=request.POST['store']),item_name=fields[0],item_size=fields[1])
+			# new_customer.save()
+
+	return HttpResponse('ok')
+
+
+
+@csrf_exempt
+@login_required(login_url='/login/')
+def CustomerFile(request,*args,**kargs):
+
+	# with open(request.FILES['file'],'r') as csv_file:
+	csv_file=request.FILES['file']
+	print(csv_file.name.endswith('csv'))
+
+	file_data=csv_file.read().decode('utf-8')
+	lines=file_data.split('\n')
+	# line_dict=get_lines_dict(lines)
+
+	# work on this function so as to allow flexibility of csv upload
+	for counter, line in enumerate(lines):
+		if counter is 0 :
+			continue
+		fields=line.split(',')
+		
+		if(len(fields)<3):
+			print(fields)
+		else:
+			existimg_customer,new_customer=Customer.objects.get_or_create(company=Company.objects.get(id=request.POST['company']),customer_name=fields[0],customer_phone=fields[2],customer_location=fields[1])
+			# new_customer.save()
+
+	return HttpResponse('ok')
+	
+def get_lines_dict(file_lines):
+	atributes_dict={}
+	lines_dict={}
+	for index,line in enumerate(file_lines):
+		if index is 0:
+			fields= line.split(',')
+			for pos,field in enumerate(fields):
+				atributes_dict[pos]=field
+				lines_dict[field]=[]
+
+			break
+
+	
+	for index,line in enumerate(file_lines):
+		if index is not 0:
+			cells = line.split(',')
+
+			for pos,cell in enumerate(cells):
+				if len(cell)>1:
+					lines_dict[atributes_dict[pos]].append(cell)
+
+
+				
+	print(lines_dict)
+	return lines_dict
+
+
 @csrf_exempt
 @login_required(login_url='/login/')
 def increaseAccount(request,*args,**kargs):
@@ -152,6 +237,18 @@ def AcceptSale(request,*args,**kargs):
 	# print(request.POST)
 	return HttpResponse('ok')
 
+
+@csrf_exempt
+@login_required(login_url='/login/')
+def AuthorizeCustomerOrder(request,*args,**kargs):
+	customer=Customer.objects.get(id=kargs['customerid'])
+
+	sale=Sales.objects.filter(customer=customer,sales_received=True,sales_authorized=False).update(sales_authorized=True,adminuser=request.user.id)
+
+	return HttpResponse('ok')
+
+
+
 @csrf_exempt
 @login_required(login_url='/login/')
 def AuthorizeSale(request,*args,**kargs):
@@ -163,6 +260,18 @@ def AuthorizeSale(request,*args,**kargs):
 	print(kargs['id'])
 	# print(request.POST)
 	return HttpResponse('ok')
+
+
+@csrf_exempt
+@login_required(login_url='/login/')
+def IssueCustomerOrder(request,*args,**kargs):
+	customer=Customer.objects.get(id=kargs['customerid'])
+
+	sale=Sales.objects.filter(customer=customer,sales_authorized=True,sales_issue_item=False).update(sales_issue_item=True,issueuser=request.user.id)
+
+	return HttpResponse('ok')
+
+
 
 @csrf_exempt
 @login_required(login_url='/login/')
@@ -176,6 +285,23 @@ def IssueSale(request,*args,**kargs):
 	# print(request.POST)
 	return HttpResponse('ok')
 
+
+@csrf_exempt
+@login_required(login_url='/login/')
+def AcceptCustomerOder(request,*args,**kargs):
+	customer=Customer.objects.get(id=kargs['customerid'])
+	sales=Sales.objects.filter(sales_received=False,customer=customer)
+	if sales.exists() and sales.count()>=1:
+		for sale in sales:
+			sale.sales_received=True
+			sale.save()
+			# updating the quantity of item sold 
+			item=Item.objects.filter(id=sale.item.id)
+			item.update(item_size=item.first().item_size-sale.sales_quantity)
+
+	return HttpResponse('ok')
+
+
 @csrf_exempt
 @login_required(login_url='/login/')
 def AcceptSaleAll(request,*args,**kargs):
@@ -188,6 +314,23 @@ def AcceptSaleAll(request,*args,**kargs):
 			item=Item.objects.filter(id=sale.item.id)
 			item.update(item_size=item.first().item_size-sale.sales_quantity)
 
+	return HttpResponse('ok')
+
+
+
+@csrf_exempt
+@login_required(login_url='/login/')
+def DeclineCustomerOder(request,*args,**kargs):
+	customer=Customer.objects.get(id=kargs['customerid'])
+	sales=Sales.objects.filter(sales_received=False,customer=customer)
+	if sales.exists() and sales.count()>=1:
+		for sale in sales:
+			# updating the quantity of item sold 
+			item=Item.objects.filter(id=sale.item.id)
+			item.update(item_size=item.first().item_size+sale.sales_quantity)
+	
+	Sales.objects.filter(sales_received=False,customer=customer).delete()
+	
 	return HttpResponse('ok')
 
 @csrf_exempt

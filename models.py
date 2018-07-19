@@ -118,7 +118,7 @@ class Item(models.Model):
 	def save(self,*args,**kargs):
 		print('save')
 		if self.item_manufucture is None or '':
-			self.item_manufucture=generate_manufucture()
+			self.item_manufucture='oceanic'
 		
 		super(Item,self).save(*args,**kargs)
 

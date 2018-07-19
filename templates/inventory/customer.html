@@ -3,6 +3,7 @@
 {%extends 'home/base.html'%}
 
 {%block style%}
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <style type="text/css">
@@ -114,16 +115,24 @@ body {
     {%endblock%}
 
 {%block content%}
+
 <div id="customerpage">
 	<h1 v-cloak>[[custom]]</h1>
+
 	<div class="row">
 <div class="col-lg-8 col-md-8 col-sm-12 col-12">
-             <form class="form-signin" v-on:submit="checkSubmitCustomerForm">
+
+             <form class="form-signin" v-on:submit="checkSubmitCustomerForm" enctype="multipart/form-data">
     {% csrf_token %}
+    <div class="form-label-group">
+        <input type="file" id="inputcustomerfile" class="form-control" placeholder="  Choose CSV File"   autofocus v-on:change="handleFileUpload()" ref="file"	>
+<!--         <label for="inputcustomername"></label>
+ -->      </div>
 
 
+ 		<!-- required -->
       <div class="form-label-group">
-        <input type="text" id="inputcustomername" class="form-control" placeholder="  Name"  required autofocus v-model="customername">
+        <input type="text" id="inputcustomername" class="form-control" placeholder="  Name"   autofocus v-model="customername" v-bind:required="required">
         <label for="inputcustomername"> Name </label>
       </div>
 
@@ -144,7 +153,7 @@ body {
       </div>
 
       
-      <button class="btn btn-lg btn-dark btn-block" type="submit" v-cloak>[[button_create_edit_customer]]</button>
+      <button  v-bind:class="{'btn':true,'btn-lg':true,'btn-block':true,'btn-outline-primary':(button_create_edit_customer=='New Customer'),'btn-outline-dark':(button_create_edit_customer!='New Customer')}" type="submit" v-cloak>[[button_create_edit_customer]]</button>
     </form>
   
 </div>
@@ -197,6 +206,8 @@ body {
    </ul>
 
 </div>
+
+
 
   
 </div>
@@ -254,9 +265,14 @@ wm = new Vue({
   	editcustomer:false,
   	curentcustomerid:'',
   	companyid:1,
+  	file:'',
+  	required:true,
   },
   methods:{
+  	
   	checkSubmitCustomerForm:function(e){  
+  
+ 
       if(this.editcustomer){
         // updating editing item
         this.$http.put('/api/customer/'+this.curentcustomerid+'/',{'customer_name':this.customername,'customer_transport':this.customertransport,'customer_phone':this.customerphone,'customer_location':this.customerlocation,'company':this.companyid})
@@ -267,7 +283,7 @@ wm = new Vue({
          this.customername='';
          this.customertransport='';
          this.customerlocation='';
-         this.customerphone='';         
+         this.customerphone='';
          this.getCustomer();
         
          this.button_create_edit_customer="New Customer";
@@ -279,7 +295,46 @@ wm = new Vue({
 
       }  else{
     // this.$http.headers.common['X-CSRF-TOKEN']="{{csrf_token}}"
-        this.$http.post('/api/customer/',{'customer_name':this.customername,'customer_transport':this.customertransport,'customer_phone':this.customerphone,'customer_location':this.customerlocation,'company':this.companyid})
+    	if(this.file){
+  			
+  			      // updating editing item
+  		$.notify('Creating Customers','info');
+  		let formData = new FormData();
+		formData.append('file', this.file);
+		formData.append('company', this.companyid);
+		axios.post( '/customerfile/',
+		  formData,
+		  {
+		    headers: {
+		        'Content-Type': 'multipart/form-data'
+		    }
+		  }
+		).then(function(response){
+
+		 this.title=response.data
+		 this.required=true
+		 $.notify(' Customers Created','success');
+         this.editcustomer=false;
+         document.getElementById('inputcustomerfile').value='';
+         
+         this.button_create_edit_customer="New Customer";
+         
+		  console.log('SUCCESS!!');
+		  location.reload() 
+		  // this.getCustomer();
+		  
+		})
+		.catch(function(){
+		  console.log('FAILURE!!');
+		});
+
+ 
+       	
+
+		 		}
+  		else{
+
+  		 this.$http.post('/api/customer/',{'customer_name':this.customername,'customer_transport':this.customertransport,'customer_phone':this.customerphone,'customer_location':this.customerlocation,'company':this.companyid})
        .then(function(response){
         // this.items=response.data
         this.title=response.data
@@ -287,18 +342,27 @@ wm = new Vue({
          this.customername='';
          this.customertransport='';
          this.customerlocation='';
-         this.customerphone='';         
+         this.customerphone='';  
          this.getCustomer();
        })
        .catch(function(error){
         this.title='error getting items'
        })
 
+
+
+  		}
+
       }         
         
 
       e.preventDefault();
     },
+    handleFileUpload:function(){
+  		this.file = this.$refs.file.files[0];
+  		this.required=false
+
+  	},
   	getCustomer:function(){
   		this.$http.get('/api/customer')
      .then(function(response){
@@ -345,4 +409,6 @@ wm = new Vue({
 
 
   </script>
+
+ 
 {%endblock%}

@@ -3,7 +3,24 @@
 {%extends 'home/base.html'%}
 
 {%block style%}
+<style type="text/css">
+	div.card {
+ 
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  text-align: center;
+}
 
+div.header {
+    background-color: black;
+    color: white;
+    padding: 10px;
+    font-size: 40px;
+}
+
+div.container {
+    padding: 10px;
+}
+</style>
 {%endblock%}
 {%block inputsearch%}
 
@@ -28,17 +45,22 @@
 {%block content%}
 <div id="authorize">
 
-
-	<h1 v-cloak> Tsh [[totalsale]]</h1>
-
-		<table class="table">
-  <thead>
+<div v-for="customer in customers" v-if="customer_has_order_auth(customer)">
+<div class="row">
+<h3 v-cloak  class="col-6">  [[customer_total_order_auth(customer)]]</h3>
+<h3 v-cloak  class="col-6">  [[customer.customer_name]]</h3>
+<button class="btn btn-outline-primary btn-sm" v-on:click="authorize_customer_order(customer.id)">Authorize Order</button>
+	
+</div>
+	
+		<table class="table " >
+  <thead class="">
     <tr>
       <th scope="col">No</th>
       <th scope="col">Date</th>
       <th scope="col">Seller</th>
-      <th scope="col">Customer</th>
-<!--       <th scope="col">Issuer</th>
+<!--       <th scope="col">Customer</th>
+ --><!--       <th scope="col">Issuer</th>
  -->      <th scope="col">Product Name</th>
       <th scope="col">Quantity</th>
       <th scope="col">Cost</th>
@@ -46,23 +68,23 @@
       <th></th>
     </tr>
   </thead>
-  <tbody>
-    <tr v-for="sale in computesales" v-if="!sale.sales_authorized" v-cloak>
+  <tbody class="">
+    <tr v-for="sale in sales" v-if=" !sale.sales_authorized && sale.customer==customer.id" v-cloak>
       <th scope="row" v-cloak>[[sale.id]]</th>
       <td v-cloak> [[parseDate(sale.created_at)]] </td>
       <td v-cloak v-for="user in users" v-if="user.id==sale.user"> <span v-for="employee in employees" v-if="employee.user == user.id" v-cloak>
       	[[employee.employee_firstname]]
       </span>
       </td>
-      <td v-cloak v-for="customer in customers" v-if="sale.customer == customer.id">  [[customer.customer_name]]</td>
-<!--       <td v-cloak>  Issuer</td>
+<!--       <td v-cloak v-for="customer in customers" v-if="sale.customer == customer.id">  [[customer.customer_name]]</td>
+ --><!--       <td v-cloak>  Issuer</td>
  -->      <td v-if="item.id == sale.item" v-for ="item in items" v-cloak>[[item.item_name]]</td>
       <td v-cloak>[[sale.sales_quantity]]</td>
       <td v-cloak>[[sale.sales_amount]]</td>
-	  <td v-cloak v-if="sale.sales_received && !sale.sales_authorized"> <button class="btn btn-small btn-dark" v-on:click="authorizeSale(sale.id)">Authorize</button></td>
+	  <td v-cloak v-if="sale.sales_received && !sale.sales_authorized"> <button class="btn btn-small btn-outline-dark" v-on:click="authorizeSale(sale.id)">Authorize</button></td>
 	  <td v-cloak v-if="!sale.sales_received && !sale.sales_authorized"> Pending ....</td>
       <td>
-      	<button type="button" class="close" aria-label="Close" v-on:click="deleteSale(sale.id)">
+      	<button type="button" class="close" aria-label="Close" v-on:click="deleteSale(sale.id,sale.item,sale.sales_quantity)">
 
 	              <span aria-hidden="true">&times;</span>
 				  </button>
@@ -71,6 +93,31 @@
 
   </tbody>
 </table>
+	
+</div>
+
+
+
+<!-- testing new look -->
+<!-- 
+<div style="margin-bottom: 20px	;">
+	<h2>Cards</h2>
+
+<p>The box-shadow property can be used to create paper-like cards:</p>
+
+<div class="card">
+  <div class="header">
+    <h1>1</h1>
+  </div>
+
+  <div class="container" v-for="sale in computesales" v-if="!sale.sales_authorized" v-cloak>
+    <p>[[parseDate(sale.created_at)]]</p>
+  </div>
+</div>
+</div>
+ -->
+
+<!-- end new look -->
 
 </div>
 {%endblock%}
@@ -143,11 +190,28 @@ new Vue({
   		 	this.title='error getting salse'
   		 })
   	},
-  	deleteSale:function(id){
+  	    updateItemsOnDeleteSales:function(id,quantity){
+
+      this.$http.post('/increaseitem/'+id+'/'+quantity+'/',{'id':id})
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        // this.getSales()
+        this.getItems()
+        // alert('response')
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+
+
+    },
+  	deleteSale:function(id,itemid,quantity){
   		 this.$http.delete('/api/sale/'+id+'/')
   		 .then(function(response){
   		 	// this.items=response.data
   		 	this.title=response.data
+  		 	this.updateItemsOnDeleteSales(itemid,quantity)
   		 	this.getSales()
   		 	// alert('response')
   		 })
@@ -167,6 +231,35 @@ new Vue({
 		
 		return amount;
   	},
+  	customer_total_order_auth:function(customer){
+  
+      var amount=0;
+       var userid=this.itemuser
+     $.each(this.sales, function(key, value) {
+           if(!value.sales_authorized && value.customer==customer.id ){
+            amount+=value.sales_amount
+             }
+         });
+
+      amount = 'Tsh' + amount.toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+
+     
+     return amount;
+
+
+    },
+  	customer_has_order_auth:function(customer){
+  
+      found=false;
+     $.each(this.sales, function(key, value) {
+           if( !value.sales_authorized && value.customer==customer.id){
+              found=true;
+             }
+         });
+     
+     return found;
+
+    },
     getUserid:function(){
       this.$http.get('/api/company')
      .then(function(response){
@@ -215,6 +308,22 @@ new Vue({
 		 	this.title='error getting items'
 		 })
   	},
+  	authorize_customer_order:function(customerid){
+  		this.$http.post('/authorizecustomerorder/'+customerid+'/',{'id':customerid})
+  		 .then(function(response){
+  		 	// this.items=response.data
+  		 	this.title=response.data
+	  		this.getSales()
+	  		this.getItems()
+	  		this.getUsers()
+	  		this.getEmployees()
+			this.getCustomers()
+  		 	// alert('response')
+  		 })
+  		 .catch(function(error){
+  		 	this.title='error getting items'
+  		 })
+  	},
   		authorizeSale:function(id){
   		this.$http.post('/authorizesale/'+id+'/',{'id':id})
   		 .then(function(response){
@@ -240,6 +349,7 @@ new Vue({
   	},
   	computed:{
   		computesales:function(){
+  			this.getUserid()
 
   		this.title='fetching data'
   		// note :
@@ -248,7 +358,7 @@ new Vue({
   		 .then(function(response){
   		 	this.sales=response.data.serial
   		 	this.title='data fetched'
-  		 	this.user= response.data.userid
+  		 	// this.user= response.data.userid
   		 	// alert("welcome")
   		 	// this.totalacceptsale=this.getTotalAcceptSales(this.sales)
   		 	this.totalsale=this.getToatalSales(this.sales)

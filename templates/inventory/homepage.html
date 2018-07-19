@@ -132,7 +132,7 @@ body {
 	  </div>
 	  <select  v-cloak v-model="salecustomer" class="custom-select" id="inputGroupSelect03">
 	    <option disabled value="" >Choose</option>
-	    <option v-bind:value="customer.id" v-for="customer in customers" v-cloak>[[customer.customer_name]]</option>
+	    <option v-bind:value="customer.id" v-for="customer in customersselect" v-cloak>[[customer.customer_name]]:[[customer.customer_location]]</option>
 	  </select>
 	</div>
 
@@ -142,7 +142,7 @@ body {
 	  </div>
 	  <select v-on:change="setPrice(selected)" v-cloak v-model="selected" class="custom-select" id="inputGroupSelect01">
 	    <option disabled value="" >Choose</option>
-	    <option v-bind:value="item.id" v-for="item in items" v-cloak>[[item.item_name]]</option>
+	    <option v-bind:value="item.id" v-for="item in itemsselect" v-cloak>[[item.item_name]]</option>
 	  </select>
 	</div>
 
@@ -159,13 +159,13 @@ body {
 
       
 
-      <button class="btn btn-lg btn-dark btn-block" type="submit">Take Order</button>
+      <button class="btn btn-lg btn-outline-primary btn-block" type="submit">Take Order</button>
       <!-- <p class="mt-5 mb-3 text-muted text-center">&copy; 2017-2018</p> -->
     </form>
 		
 	</div>
 
-	<div class="row"  style="
+	<div class="row"  style=" max-height: 500px;
 	overflow-y: auto;
 	overflow-x: auto;">
 
@@ -205,7 +205,7 @@ body {
       <div>
        
       </div>
-      	<h2 class="text-muted" v-cloak> Tsh [[totalsale]] </h2>
+      	<h2 class="text-muted" v-cloak>  [[totalsale]] </h2>
       </div>
   </li>
 
@@ -213,56 +213,63 @@ body {
 
 </div>
 
+<!-- begin order -->
+<div class='col-lg-4 col-md-4 col-sm-12 col-12' style="margin-top: 20px; max-height: 800px;
+  overflow-y: auto;
+  overflow-x: auto;">
 
-<div class='col-lg-4 col-md-4 col-sm-12 col-12' style="margin-top: 20px;">
-	<ul class="list-group">
+<div v-for="customer in customers" style="margin-bottom: 20px;" v-if="customer_has_order(customer)">
+  <ul class="list-group" >
   <li class="list-group-item d-flex justify-content-between lh-condensed">
       <div>
-        <h6  class="my-0" > Total </h6>
+   
+        <h4  class="" v-cloak>[[customer.customer_name]] </h4>
         
       </div>
       <div>
-      <h4 class="text-muted align-right" v-cloak> Tsh [[totalacceptsale]] </h4>
-      	
+
+      <h4 class="text-muted align-right" v-cloak>  [[customer_total_order(customer)]]</h4>
+        
       </div>
   </li>
 
 </ul> 
-<div style="max-height: 500px;
-	overflow-y: auto;
-	overflow-x: auto;">
+<div >
 
-	 <ul class="list-group">
+   <ul class="list-group">
 
-			<li class="list-group-item d-flex justify-content-between lh-condensed" v-for= "sale in sales"  v-if="!sale.sales_received && sale.user==itemuser" v-on:dblclick="acceptSales(sale.id)" v-cloak>
-	              <div>
-	                <h6 v-if="item.id == sale.item" class="my-0" v-for="item in items" v-cloak>[[item.item_name]] </h6>
-	                <small class="text-muted" v-cloak> [[sale.sales_quantity]] </small>
-	              </div>
-	              <div>
-	              <span v-cloak class="text-muted">Tsh [[sale.sales_amount]] </span>
+      <li class="list-group-item d-flex justify-content-between lh-condensed" v-for= "sale in sales"  v-if="!sale.sales_received && sale.user==itemuser && sale.customer==customer.id" v-on:dblclick="acceptSales(sale.id)" v-cloak>
+                <div>
+                  <h6 v-if="item.id == sale.item" class="my-0" v-for="item in items" v-cloak>[[item.item_name]] </h6>
+                  <small class="text-muted" v-cloak> [[sale.sales_quantity]] </small>
+                </div>
+                <div>
+                <span v-cloak class="text-muted">Tsh [[sale.sales_amount]] </span>
 
-	              <br>
-                <span aria-hidden="true" v-for="customer in customers" v-if="customer.id == sale.customer" v-cloak>[[customer.customer_name]]</span>
-	              <button type="button" class="close" aria-label="Close" v-on:click="deleteSale(sale.id,sale.item,sale.sales_quantity)">
+                <br>
+                <!-- <span aria-hidden="true"  v-if="customer.id == sale.customer" v-cloak>[[customer.customer_name]]</span> -->
+                <button type="button" class="close" aria-label="Close" v-on:click="deleteSale(sale.id,sale.item,sale.sales_quantity)">
 
-	              <span aria-hidden="true">&times;</span>
-				  </button>
-	              	
-	              </div>
-	              
-	            </li>
+                <span aria-hidden="true">&times;</span>
+          </button>
+                  
+                </div>
+                
+              </li>
 
-	 </ul>
+   </ul>
 
 </div>
-		
+    
   
- <button style="margin-top: 10px;" v-on:click="acceptAllSales" class='btn btn-light btn-small'>Yes All</button>
-  <button v-on:click="declineAllSales" style="margin-top: 10px;" class='btn btn-dark btn-small'>No All</button>
+ <button style="margin-top: 10px;" v-on:click="acceptCustomerOrder(customer.id)" class='btn btn-outline-primary btn-small'>Accept</button>
+  <button v-on:click="declineCustomerOrder(customer.id)" style="margin-top: 10px;" class='btn btn-outline-dark btn-small'>Decline</button>
 
+</div>
 
- </div>
+</div>
+
+<!-- end order -->
 
 </div>
 
@@ -304,6 +311,17 @@ new Vue({
         api_url='/api/sale/?search='+this.searchfiledsale;
       }
 
+        let api_url2='/api/customer';
+      if(this.searchfiledsale!==''||this.searchfiledsale!==null){
+        api_url2='/api/customer/?search='+this.searchfiledsale;
+      }
+
+
+          let api_url3='/api/item';
+      if(this.searchfiledsale!==''||this.searchfiledsale!==null){
+        api_url3='/api/item/?search='+this.searchfiledsale;
+      }
+
      this.$http.get(api_url)
      .then(function(response){
 
@@ -315,6 +333,31 @@ new Vue({
      .catch(function(error){
       this.title='error getting items'
      })
+
+
+     this.$http.get(api_url2)
+     .then(function(response){
+
+      vsale.customersselect=response.data
+      // this.alertOnMininumIrem(this.items)
+     })
+     .catch(function(error){
+      this.title='error getting items'
+     })
+
+
+     
+
+     this.$http.get(api_url3)
+     .then(function(response){
+
+      vsale.itemsselect=response.data
+      // this.alertOnMininumIrem(this.items)
+     })
+     .catch(function(error){
+      this.title='error getting items'
+     })
+
     }
   }
 
@@ -341,6 +384,9 @@ vsale=new Vue({
     customers:'',
     totalacceptsale:0,
     totalsale:0,
+    odered_customer:'',
+    customersselect:'',
+    itemsselect:'',
   },
 
   methods:{
@@ -363,6 +409,8 @@ vsale=new Vue({
 		 this.$http.get('/api/item')
 		 .then(function(response){
 		 	this.items=response.data
+      this.itemsselect=response.data
+      
 		 })
 		 .catch(function(error){
 		 	this.title='error getting items'
@@ -403,11 +451,40 @@ vsale=new Vue({
 		 this.$http.get('/api/customer')
 		 .then(function(response){
 		 	this.customers=response.data
+      this.customersselect=response.data
+      
 		 })
 		 .catch(function(error){
 		 	this.title='error getting items'
 		 })
   	},
+    customer_has_order:function(customer){
+  
+      found=false;
+     $.each(this.sales, function(key, value) {
+           if(!value.sales_received && value.customer==customer.id){
+              found=true;
+             }
+         });
+     
+     return found;
+
+    },
+    customer_total_order:function(customer){
+  
+      var amount=0;
+       var userid=this.itemuser
+     $.each(this.sales, function(key, value) {
+           if(!value.sales_received && value.customer==customer.id && value.user==userid){
+            amount+=value.sales_amount
+             }
+         });
+     
+     amount = 'Tsh' + amount.toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+     return amount;
+
+
+    },
   	checkform:function(e){
  //  		csrftoken = Cookies.get('csrftoken');
 	// headers = {HTTP_X_CSRFTOKEN: csrftoken};
@@ -487,7 +564,35 @@ vsale=new Vue({
   		 	this.title='error getting items'
   		 })
 
-  	}
+  	},acceptCustomerOrder:function(customerid){
+      this.$http.post('/saleaccept/'+customerid+'/')
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        this.getSales()
+        // alert('response')
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+
+
+    }
+    ,declineCustomerOrder:function(customerid){
+      this.$http.post('/saledecline/'+customerid+'/')
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        this.getSales()
+        this.getItems()
+        // alert('response')
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+
+
+    }
   	,acceptAllSales:function(){
   		this.$http.post('/saleaccept/')
   		 .then(function(response){
@@ -511,6 +616,7 @@ vsale=new Vue({
 			     	amount+=value.sales_amount
 				     }
 				 });
+    amount = 'Tsh' + amount.toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
 		
 		return amount;
 
@@ -525,7 +631,7 @@ vsale=new Vue({
 			     	amount+=value.sales_amount
 				     }
 				 });
-		
+		amount = 'Tsh' + amount.toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
 		return amount;
   	},setPrice:function(id){
   		
