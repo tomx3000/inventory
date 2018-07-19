@@ -13,12 +13,13 @@ from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-
+import csv
 # Create your views here.
 
 pathselector={1:'base',2:'base',3:'order',4:'expense',5:'counter'}
 
 privillage={'sales':3,'admin':1,'assistantadmin':2,'bursar':4,'godown':5}
+# hnishael@gmail.com
 
 @csrf_exempt
 @login_required(login_url='/login/')
@@ -37,6 +38,7 @@ def resetPassword(request,*args,**kargs):
 	password=generateRoandom(8)
 
 	user.set_password(password)
+	user.save()
 	employee=Employee.objects.get(user=user.id)
 
 	admin = Employee.objects.filter(employee_privillage=1)
@@ -85,6 +87,63 @@ def ChangeUsername(request,*args,**kargs):
 		return HttpResponse('good')
 	else:
 		return HttpResponse('bad')
+
+@csrf_exempt
+@login_required(login_url='/login/')
+def CustomerFile(request,*args,**kargs):
+
+	# with open(request.FILES['file'],'r') as csv_file:
+	csv_file=request.FILES['file']
+	print(csv_file.name.endswith('csv'))
+
+	file_data=csv_file.read().decode('utf-8')
+	lines=file_data.split('\n')
+	line_dict=get_lines_dict(lines)
+
+	# work on this function so as to allow flexibility of csv upload
+	# for field in line_dict:
+	# 	existimg_customer,new_customer=Customer.objects.get_or_create(company=Company.objects.get(id=request.POST['company']),customer_name=field['customername'],customer_phone=field['contacts'],customer_location=field['location'])
+
+	for counter, line in enumerate(lines):
+		if counter is 0 :
+			continue
+		fields=line.split(',')
+		
+		if(len(fields)<3):
+			print(fields)
+		else:
+			existimg_customer,new_customer=Customer.objects.get_or_create(company=Company.objects.get(id=request.POST['company']),customer_name=fields[0],customer_phone=fields[2],customer_location=fields[1])
+			# new_customer.save()
+
+	return HttpResponse('ok')
+	
+def get_lines_dict(file_lines):
+	atributes_dict={}
+	lines_dict={}
+	for index,line in enumerate(file_lines):
+		if index is 0:
+			fields= line.split(',')
+			for pos,field in enumerate(fields):
+				atributes_dict[pos]=field
+				lines_dict[field]=[]
+
+			break
+
+	
+	for index,line in enumerate(file_lines):
+		if index is not 0:
+			cells = line.split(',')
+
+			for pos,cell in enumerate(cells):
+				if len(cell)>1:
+					lines_dict[atributes_dict[pos]].append(cell)
+
+
+				
+	print(lines_dict)
+	return lines_dict
+
+
 @csrf_exempt
 @login_required(login_url='/login/')
 def increaseAccount(request,*args,**kargs):
@@ -377,4 +436,5 @@ def ViewAuthorize(request,*args,**kargs):
 	# 		sale.update(sales_received=True)
 	# else:
 	# 	sales.update(sales_received=True)
+
 

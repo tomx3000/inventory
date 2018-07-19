@@ -47,7 +47,7 @@
     </tr>
   </thead>
   <tbody>
-    <tr v-for="sale in computesales" v-if="!sale.sales_authorized" v-cloak>
+    <tr v-for="sale in sales" v-if="!sale.sales_authorized" v-cloak>
       <th scope="row" v-cloak>[[sale.id]]</th>
       <td v-cloak> [[parseDate(sale.created_at)]] </td>
       <td v-cloak v-for="user in users" v-if="user.id==sale.user"> <span v-for="employee in employees" v-if="employee.user == user.id" v-cloak>
@@ -240,7 +240,7 @@ new Vue({
   	},
   	computed:{
   		computesales:function(){
-
+		this.getUserid()
   		this.title='fetching data'
   		// note :
   		// this function is modified to get all sales objeects regardless of the user requesting this object
@@ -248,7 +248,7 @@ new Vue({
   		 .then(function(response){
   		 	this.sales=response.data.serial
   		 	this.title='data fetched'
-  		 	this.user= response.data.userid
+  		 	//this.user= response.data.userid
   		 	// alert("welcome")
   		 	// this.totalacceptsale=this.getTotalAcceptSales(this.sales)
   		 	this.totalsale=this.getToatalSales(this.sales)
