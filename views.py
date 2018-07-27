@@ -110,9 +110,10 @@ def ItemFile(request,*args,**kargs):
 		if(len(fields)<2):
 			print(fields)
 		else:
+			print(counter)
 			existimg_item,new_item=Item.objects.get_or_create(store=Store.objects.get(id=request.POST['store']),item_name=fields[0],item_size=fields[1])
 			# new_customer.save()
-
+	print("done , items stored")
 	return HttpResponse('ok')
 
 
@@ -138,9 +139,10 @@ def CustomerFile(request,*args,**kargs):
 		if(len(fields)<3):
 			print(fields)
 		else:
+			print(counter)
 			existimg_customer,new_customer=Customer.objects.get_or_create(company=Company.objects.get(id=request.POST['company']),customer_name=fields[0],customer_phone=fields[2],customer_location=fields[1])
 			# new_customer.save()
-
+	print("Done, Customers stores")
 	return HttpResponse('ok')
 	
 def get_lines_dict(file_lines):
@@ -237,6 +239,28 @@ def AcceptSale(request,*args,**kargs):
 	# print(request.POST)
 	return HttpResponse('ok')
 
+
+
+@csrf_exempt
+@login_required(login_url='/login/')
+def UpdateSalesPaymentMethod(request,*args,**kargs):
+	
+	sale=Sales.objects.filter(id=kargs['saleid'])
+	updatesale=sale.update(sales_method_payment=kargs['cash'])
+
+	# updating the quantity of item sold 
+	print(kargs['saleid'])
+	# print(request.POST)
+	return HttpResponse('ok')
+
+@csrf_exempt
+@login_required(login_url='/login/')
+def UpdateCustomerSalesPaymentMethod(request,*args,**kargs):
+	customer=Customer.objects.get(id=kargs['customerid'])
+
+	sale=Sales.objects.filter(customer=customer,sales_received=False).update(sales_method_payment=kargs['cash'])
+
+	return HttpResponse('ok')
 
 @csrf_exempt
 @login_required(login_url='/login/')

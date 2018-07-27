@@ -3,6 +3,8 @@
 {%extends 'home/base.html'%}
 
 {%block style%}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
 <style type="text/css">
 	div.card {
  
@@ -45,6 +47,52 @@ div.container {
 {%block content%}
 <div id="authorize">
 
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="exampleModalLabel">Paid </h2>
+        <button type="button" class="close" data-dismiss="modal" v-on:click="runupdatesale()">
+        <i tyep="button" class="fa fa-check fa-md" style="font-size:24;color:green" ></i>
+        </button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" v-on:click="stopmodal()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        
+        
+      </div>
+      <div class="modal-body ">
+
+             <!-- buttons selection -->
+  <div class="btn-group btn-group-toggle " data-toggle="buttons">
+  <label class="btn btn-secondary " v-on:click="setMethod('loan')">
+    <input type="radio" name="options" id="option1" autocomplete="off" checked> Loan
+  </label>
+  <label class="btn btn-secondary active" v-on:click="setMethod('cash')">
+    <input type="radio" name="options" id="option2" autocomplete="off"> Cash
+  </label>
+  <label class="btn btn-secondary" v-on:click="setMethod('bank')">
+    <input type="radio" name="options" id="option3" autocomplete="off"> Bank
+  </label>
+  <label class="btn btn-secondary" v-on:click="setMethod('mobile')">
+    <input type="radio" name="options" id="option3" autocomplete="off"> Mobile
+  </label>
+
+</div>
+<!-- end button selection -->
+  
+      </div>
+      <div class="modal-footer">
+   
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- end demo $$$$$$$$$$$$$$$$$$$$$$$$$$$$ -->
+
 <div v-for="customer in customers" v-if="customer_has_order_auth(customer)">
 <div class="row">
 <h3 v-cloak  class="col-6">  [[customer_total_order_auth(customer)]]</h3>
@@ -65,11 +113,12 @@ div.container {
       <th scope="col">Quantity</th>
       <th scope="col">Cost</th>
       <th scope="col">Status</th>
+      <th scope="col">Paid</th>
       <th></th>
     </tr>
   </thead>
   <tbody class="">
-    <tr v-for="sale in sales" v-if=" !sale.sales_authorized && sale.customer==customer.id" v-cloak>
+    <tr v-for="sale in sales" v-if="( !sale.sales_authorized && sale.customer==customer.id )|| (sale.sales_method_payment=='loan' && sale.customer==customer.id)" v-cloak>
       <th scope="row" v-cloak>[[sale.id]]</th>
       <td v-cloak> [[parseDate(sale.created_at)]] </td>
       <td v-cloak v-for="user in users" v-if="user.id==sale.user"> <span v-for="employee in employees" v-if="employee.user == user.id" v-cloak>
@@ -83,11 +132,15 @@ div.container {
       <td v-cloak>[[sale.sales_amount]]</td>
 	  <td v-cloak v-if="sale.sales_received && !sale.sales_authorized"> <button class="btn btn-small btn-outline-dark" v-on:click="authorizeSale(sale.id)">Authorize</button></td>
 	  <td v-cloak v-if="!sale.sales_received && !sale.sales_authorized"> Pending ....</td>
+	  <td v-cloak v-if="sale.sales_method_payment=='loan' && sale.sales_authorized"> Authorized Loan</td>
+	  <td v-cloak>[[sale.sales_method_payment]]</td>
       <td>
       	<button type="button" class="close" aria-label="Close" v-on:click="deleteSale(sale.id,sale.item,sale.sales_quantity)">
 
 	              <span aria-hidden="true">&times;</span>
 				  </button>
+
+		<i tyep="button" class="fa fa-check" style="font-size:24;color:green; margin-right: 0px;" v-on:click="prepsalemethodupdate(sale.id)" v-cloak data-toggle="modal" data-target="#exampleModal" v-if="sale.sales_method_payment=='loan' && sale.sales_authorized"></i>
       </td>
     </tr>
 
@@ -173,7 +226,79 @@ new Vue({
   		users:'',
   	},
   	methods:{
-  		  	getSales:function(){
+  		
+    // begin js code to handle the modal
+    setMethod:function(method){
+      this.payment_method=method
+      console.log(method)
+    },
+    stopmodal:function(){
+      this.payment_method=''
+      this.sale_method_id=''
+      this.customer_method_id=''
+      console.log('closed')
+    },
+    prepsalemethodupdate:function(saleid){
+      this.customer_method_id=''
+      this.sale_method_id=saleid
+      this.singlesale=true
+      console.log('saleid')
+      console.log(saleid)
+      console.log('true')
+
+    },
+    prepcustomersalemethodupdate:function(customerid){
+      this.sale_method_id=''
+      this.customer_method_id=customerid
+      this.singlesale=false
+      console.log('customerid')
+      console.log(customerid)
+      console.log('false')
+    },
+    runupdatesale:function(){
+      if(this.singlesale){this.updateSalePaymentMethod(this.payment_method)
+        console.log('updatesale')
+      }
+      else {this.updateCustomerSalePaymentMethod(this.payment_method)
+        console.log('updatecustomer')
+      }
+      
+    },
+    updateSalePaymentMethod:function(cash){
+      saleid=this.sale_method_id
+     this.$http.post('/paymentmethod/'+saleid+'/'+cash+'/',{})
+       .then(function(response){
+        // this.items=response.data
+      this.title=response.data
+      // this.acceptSales(saleid)
+
+      this.getSales()
+      
+    
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+
+    },
+    updateCustomerSalePaymentMethod:function(cash){
+      customerid=this.customer_method_id
+     this.$http.post('/customerpayment/'+customerid+'/'+cash+'/',{})
+       .then(function(response){
+        // this.items=response.data
+      this.title=response.data
+      // this.acceptCustomerOrder(customerid)
+      
+      this.getSales()
+    
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+
+    },
+    // end js code to handle the modal
+  		getSales:function(){
   		this.title='fetching data'
   		// note :
   		// this function is modified to get all sales objeects regardless of the user requesting this object
@@ -236,7 +361,7 @@ new Vue({
       var amount=0;
        var userid=this.itemuser
      $.each(this.sales, function(key, value) {
-           if(!value.sales_authorized && value.customer==customer.id ){
+           if((!value.sales_authorized && value.customer==customer.id ) || (value.sales_method_payment=='loan' && value.customer==customer.id )){
             amount+=value.sales_amount
              }
          });
@@ -252,7 +377,7 @@ new Vue({
   
       found=false;
      $.each(this.sales, function(key, value) {
-           if( !value.sales_authorized && value.customer==customer.id){
+           if( (!value.sales_authorized && value.customer==customer.id) || (value.sales_method_payment=='loan' && value.customer==customer.id )){
               found=true;
              }
          });
