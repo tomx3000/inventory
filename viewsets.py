@@ -18,7 +18,7 @@ class SalesViewSet(viewsets.ModelViewSet):
 	queryset=Sales.objects.all()
 	serializer_class=SalesSerializer
 	filter_backends = (filters.SearchFilter,)
-	search_fields = ('customer__customer_name', 'item__item_name','sales_quantity','sales_amount','user__employee__employee_firstname','created_at','id')
+	search_fields = ('customer__customer_name', 'item__item_name','sales_quantity','sales_amount','sales_method_payment','user__employee__employee_firstname','created_at','id')
 	authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 	permission_classes=(permissions.IsAuthenticatedOrReadOnly,)
                         
@@ -129,7 +129,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 			    'tomx3000@gmail.com',
 			    [email],
 			    fail_silently=False,
-			   
+			   	
 			)
 
 		return Response({'username':username,'password':'password'})

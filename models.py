@@ -69,6 +69,9 @@ class Customer(models.Model):
 	def __str__(self):
 		return str(self.customer_name)
 
+	class Meta:
+		ordering=['-id']
+
 
 	pass
 class Employee(models.Model):
@@ -159,6 +162,7 @@ class Sales(models.Model):
 	customer=models.ForeignKey(Customer,on_delete=models.CASCADE)
 	sales_quantity=models.FloatField()
 	sales_amount=models.FloatField()
+	sales_loan=models.BooleanField(default=True)
 	sales_method_payment=models.CharField(max_length=10,default="cash")
 	# sets pending for saler
 	sales_received=models.BooleanField(default=False)
@@ -172,6 +176,9 @@ class Sales(models.Model):
 
 	def __str__(self):
 		return str(self.item.item_name)+" :"+str(self.sales_amount)
+
+	class Meta:
+		ordering=['-id']
 
 	pass
 class Account(models.Model):
@@ -200,6 +207,8 @@ class Expense(models.Model):
 		return str(self.expense_description)
 
 	
+	class Meta:
+		ordering=['-id']
 
 
 

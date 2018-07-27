@@ -240,6 +240,28 @@ def AcceptSale(request,*args,**kargs):
 	return HttpResponse('ok')
 
 
+
+@csrf_exempt
+@login_required(login_url='/login/')
+def UpdateSalesPaymentMethod(request,*args,**kargs):
+	
+	sale=Sales.objects.filter(id=kargs['saleid'])
+	updatesale=sale.update(sales_method_payment=kargs['cash'])
+
+	# updating the quantity of item sold 
+	print(kargs['saleid'])
+	# print(request.POST)
+	return HttpResponse('ok')
+
+@csrf_exempt
+@login_required(login_url='/login/')
+def UpdateCustomerSalesPaymentMethod(request,*args,**kargs):
+	customer=Customer.objects.get(id=kargs['customerid'])
+
+	sale=Sales.objects.filter(customer=customer,sales_received=False).update(sales_method_payment=kargs['cash'])
+
+	return HttpResponse('ok')
+
 @csrf_exempt
 @login_required(login_url='/login/')
 def AuthorizeCustomerOrder(request,*args,**kargs):
