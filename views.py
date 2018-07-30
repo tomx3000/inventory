@@ -666,3 +666,4 @@ def ViewAuthorize(request,*args,**kargs):
 	# else:
 	# 	sales.update(sales_received=True)
 
+
