@@ -1,0 +1,374 @@
+{%extends 'home/base.html'%}
+
+{%block style%}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style type="text/css">
+    :root {
+  --input-padding-x: .75rem;
+  --input-padding-y: .75rem;
+}
+html,
+body {
+  height: 100%;
+}
+/*body {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center;
+  align-items: center;
+  padding-top: 40px;
+  padding-bottom: 40px;
+  background-color: #f5f5f5;
+}*/
+.form-signin {
+  width: 100%;
+  max-width: 420px;
+  padding: 15px;
+  margin: auto;
+}
+.form-label-group {
+  position: relative;
+  margin-bottom: 1rem;
+}
+.form-label-group > input,
+.form-label-group > label {
+  padding: var(--input-padding-y) var(--input-padding-x);
+}
+.form-label-group > label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 100%;
+  margin-bottom: 0; /* Override default `<label>` margin */
+  line-height: 1.5;
+  color: #495057;
+  border: 1px solid transparent;
+  border-radius: .25rem;
+  transition: all .1s ease-in-out;
+}
+.form-label-group input::-webkit-input-placeholder {
+  color: transparent;
+}
+.form-label-group input:-ms-input-placeholder {
+  color: transparent;
+}
+.form-label-group input::-ms-input-placeholder {
+  color: transparent;
+}
+.form-label-group input::-moz-placeholder {
+  color: transparent;
+}
+.form-label-group input::placeholder {
+  color: transparent;
+}
+.form-label-group input:not(:placeholder-shown) {
+  padding-top: calc(var(--input-padding-y) + var(--input-padding-y) * (2 / 3));
+  padding-bottom: calc(var(--input-padding-y) / 3);
+}
+.form-label-group input:not(:placeholder-shown) ~ label {
+  padding-top: calc(var(--input-padding-y) / 3);
+  padding-bottom: calc(var(--input-padding-y) / 3);
+  font-size: 12px;
+  color: #777;
+}
+</style>
+
+{%endblock%}
+{%block inputsearch%}
+
+   <div id="searchcustomer">
+    
+    <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow row ">
+      <a class="navbar-brand col-2 col-sm-2 col-md-2 col-lg-2  mr-0 " href="#">Oceanic : {{user.username}}
+      </a>
+      <input class="form-control form-control-dark col-5 col-sm-5 col-md-8 col-lg-8 w-100" type="text" placeholder="Search" aria-label="Search" v-model="searchfiledcustomer" v-on:keyup.enter="getCustomer">
+      <button class='btn btn-outline-secondary my-2 my-sm-0 col-2 col-sm-2 col-md-1 col-lg-1' v-cloak v-on:click.prevent="getCustomer()">search</button>
+      <ul class="navbar-nav px-3 col-3 col-sm-3 col-md-1 col-lg-1">
+        <li class="nav-item text-nowrap ">
+          <a class="nav-link" href="/login/">Sign out</a>
+        </li>
+      </ul>
+    </nav>
+
+  </div>
+    {%endblock%}
+
+{%block content%}
+
+<div id="customerpage">
+	<h1 v-cloak>[[custom]]</h1>
+
+	<div class="row">
+<div class="col-lg-8 col-md-8 col-sm-12 col-12">
+
+             <form class="form-signin" v-on:submit="checkSubmitCustomerForm" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-label-group">
+        <input type="file" id="inputcustomerfile" class="form-control" placeholder="  Choose CSV File"   autofocus v-on:change="handleFileUpload()" ref="file"	>
+<!--         <label for="inputcustomername"></label>
+ -->      </div>
+
+
+ 		<!-- required -->
+      <div class="form-label-group">
+        <input type="text" id="inputcustomername" class="form-control" placeholder="  Name"   autofocus v-model="customername" v-bind:required="required">
+        <label for="inputcustomername"> Name </label>
+      </div>
+
+      <div class="form-label-group">
+        <input type="number" id="inputcustomerphone" class="form-control" placeholder="Phone"   autofocus v-model="customerphone">
+        <label for="inputcustomerphone"> Phone </label>
+      </div>
+
+      <div class="form-label-group">
+        <input type="text" id="inputcustomertransportation" class="form-control" placeholder="Transportation"   autofocus v-model="customertransport">
+        <label for="inputcustomertransportation"> Transportation </label>
+      </div>
+
+
+  <div class="form-label-group">
+        <input type="text" id="inputcustomerlocation" class="form-control" placeholder="Location"   autofocus v-model="customerlocation">
+        <label for="inputcustomerlocation"> Location</label>
+      </div>
+
+      
+      <button  v-bind:class="{'btn':true,'btn-lg':true,'btn-block':true,'btn-outline-primary':(button_create_edit_customer=='New Customer'),'btn-outline-dark':(button_create_edit_customer!='New Customer')}" type="submit" v-cloak>[[button_create_edit_customer]]</button>
+    </form>
+  
+</div>
+<div class="col-lg-4 col-md-4 col-sm-12 col-12">
+
+  <ul class="list-group">
+     
+   <li class="list-group-item d-flex justify-content-between lh-condensed">
+        <div>
+        <h4  class="my-0" >  Name </h4>
+        <small class="text-muted"> Phone </small>
+      </div>
+      <div>
+      <h4 class="my-0"> Location </h4>
+      <small class="text-muted"> Transportation </small>
+        
+      </div>
+      
+      
+  </li>
+
+</ul> 
+<div style="max-height: 500px;
+  overflow-y: auto;
+  overflow-x: auto;">
+
+   <ul class="list-group">
+
+
+      <li class="list-group-item d-flex justify-content-between lh-condensed" style="margin-top:10px" v-for="customer  in customers" v-on:dblclick="editCustomer(customer.company,customer.id,customer.customer_name,customer.customer_phone,customer.customer_transport,customer.customer_location)" v-cloak>
+
+              <div> 
+          <h6  class="my-0" v-cloak> [[customer.customer_name]] </h6>
+          <small class="text-muted" v-cloak> [[customer.customer_phone]] </small>
+        </div>
+
+      <div>
+      <h6  class="my-0" v-cloak> [[customer.customer_location]] 
+        
+      </h6>
+        <small class="text-muted" v-cloak> [[customer.customer_transport]] </small>
+        
+      </div>
+     
+<i id="trashitem" class="fa fa-trash fa-2x pull-right" v-on:click="deleteCustomer(customer.id)"></i>
+                
+              </li>
+
+
+   </ul>
+
+</div>
+
+
+
+  
+</div>
+  
+
+</div>
+
+</div>
+
+{%endblock%}
+
+{%block script%}
+  <script >
+wm = new Vue({
+  delimiters: ['[[', ']]'],
+  el: '#searchcustomer',
+  data:{
+    searchfiledcustomer:'',
+    title:''
+  }
+  ,methods:{
+    getCustomer:function(){
+      var api_url='/api/customer';
+      if(this.searchfiledcustomer!==''||this.searchfiledcustomer!==null){
+        api_url='/api/customer/?search='+this.searchfiledcustomer;
+      }
+     this.$http.get(api_url)
+     .then(function(response){
+      vmcustomer.customers=response.data
+      // this.alertOnMininumIrem(this.items)
+     })
+     .catch(function(error){
+      this.title='error getting items'
+     })
+    },
+  }
+})
+ vmcustomer= new Vue({
+  	delimiters: ['[[', ']]'],
+  el: '#customerpage',
+  data:{
+  	custom:'',
+  	customername:'',
+  	customerphone:'',
+  	customerlocation:'',
+  	customertransport:'',
+  	customers:'',
+  	button_create_edit_customer:'New Customer',
+  	editcustomer:false,
+  	curentcustomerid:'',
+  	companyid:1,
+  	file:'',
+  	required:true,
+  },
+  methods:{
+  	
+  	checkSubmitCustomerForm:function(e){  
+  
+ 
+      if(this.editcustomer){
+        // updating editing item
+        this.$http.put('/api/customer/'+this.curentcustomerid+'/',{'customer_name':this.customername,'customer_transport':this.customertransport,'customer_phone':this.customerphone,'customer_location':this.customerlocation,'company':this.companyid})
+       .then(function(response){
+        // this.items=response.data
+         this.title=response.data
+         this.editcustomer=false;
+         this.customername='';
+         this.customertransport='';
+         this.customerlocation='';
+         this.customerphone='';
+         this.getCustomer();
+        
+         this.button_create_edit_customer="New Customer";
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+        
+      }  else{
+    // this.$http.headers.common['X-CSRF-TOKEN']="{{csrf_token}}"
+    	if(this.file){
+  			
+  			      // updating editing item
+  		$.notify('Creating Customers','info');
+  		var formData = new FormData();
+		formData.append('file', this.file);
+		formData.append('company', this.companyid);
+		axios.post( '/customerfile/',
+		  formData,
+		  {
+		    headers: {
+		        'Content-Type': 'multipart/form-data'
+		    }
+		  }
+		).then(function(response){
+		 this.title=response.data
+		 this.required=true
+		 $.notify(' Customers Created','success');
+         this.editcustomer=false;
+         document.getElementById('inputcustomerfile').value='';
+         
+         this.button_create_edit_customer="New Customer";
+         
+		  console.log('SUCCESS!!');
+		  location.reload() 
+		  // this.getCustomer();
+		  
+		})
+		.catch(function(){
+		  console.log('FAILURE!!');
+		});
+ 
+       	
+		 		}
+  		else{
+  		 this.$http.post('/api/customer/',{'customer_name':this.customername,'customer_transport':this.customertransport,'customer_phone':this.customerphone,'customer_location':this.customerlocation,'company':this.companyid})
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+         // this.getSales()
+         this.customername='';
+         this.customertransport='';
+         this.customerlocation='';
+         this.customerphone='';  
+         this.getCustomer();
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+  		}
+      }         
+        
+      e.preventDefault();
+    },
+    handleFileUpload:function(){
+  		this.file = this.$refs.file.files[0];
+  		this.required=false
+  	},
+  	getCustomer:function(){
+  		this.$http.get('/api/customer')
+     .then(function(response){
+      this.customers=response.data
+     })
+     .catch(function(error){
+      this.title='error getting items'
+     })
+  	},
+  	deleteCustomer:function(id){
+  	 this.$http.delete('/api/customer/'+id+'/')
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        this.getCustomer()
+        // alert('response')
+       })
+       .catch(function(error){
+        this.title='error getting items'
+       })
+  	},
+  	editCustomer:function(company,id,name,phone,transport,location){
+		this.editcustomer=true;
+         this.customername=name;
+         this.customertransport=transport;
+         this.customerlocation=location;
+         this.customerphone=phone; 
+         this.curentcustomerid=id;
+         this.companyid=company
+         this.button_create_edit_customer="Edit Customer";
+        
+  	},
+  	getCompany:function(){
+  	}
+  }
+  ,
+    beforeMount(){
+      this.getCustomer()
+    }
+  })
+  </script>
+
+ 
+{%endblock%}

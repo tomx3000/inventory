@@ -21,6 +21,127 @@ pathselector={1:'base',2:'base',3:'order',4:'expense',5:'counter'}
 privillage={'sales':3,'admin':1,'assistantadmin':2,'bursar':4,'godown':5}
 # hnishael@gmail.com
 
+import datetime
+from inventory.utils import render_to_pdf #created in step 4
+from django.template.loader import get_template
+from django.db.models import Sum
+from django.db.models import Q
+from django.http import JsonResponse
+from django.db.models import Avg,Sum
+from datetime import timedelta
+from django.utils import timezone
+
+@csrf_exempt
+@login_required(login_url='/login/')
+def getGraphBata(request, *args, **kwargs):
+	print('oldpdf')
+	days_dict={1:'Monday',2:'Tuesday',3:'Wednesday',4:'Thursday',5:'Friday',6:'Sartuday',7:'Sunday'}
+
+	sunday=datetime.date.today()-timedelta(days=datetime.date.today().isocalendar()[2]-7)
+	monday=datetime.date.today()-timedelta(days=datetime.date.today().isocalendar()[2]-1)
+	tuesday=datetime.date.today()-timedelta(days=datetime.date.today().isocalendar()[2]-2)
+	wednesday=datetime.date.today()-timedelta(days=datetime.date.today().isocalendar()[2]-3)
+	thursday=datetime.date.today()-timedelta(days=datetime.date.today().isocalendar()[2]-4)
+	friday=datetime.date.today()-timedelta(days=datetime.date.today().isocalendar()[2]-5)
+	sartuday=datetime.date.today()-timedelta(days=datetime.date.today().isocalendar()[2]-6)
+	
+	sunday_sales=Sales.objects.filter(created_at__gte=sunday,created_at__lt=sunday+timedelta(days=1)).aggregate(Sum('sales_amount'))['sales_amount__sum']
+	monday_sales=Sales.objects.filter(created_at__gte=monday,created_at__lt=monday+timedelta(days=1)).aggregate(Sum('sales_amount'))['sales_amount__sum']
+	tuesday_sales=Sales.objects.filter(created_at__gte=tuesday,created_at__lt=tuesday+timedelta(days=1)).aggregate(Sum('sales_amount'))['sales_amount__sum']
+	wednesday_sales=Sales.objects.filter(created_at__gte=wednesday,created_at__lt=wednesday+timedelta(days=1)).aggregate(Sum('sales_amount'))['sales_amount__sum']
+	thursday_sales=Sales.objects.filter(created_at__gte=thursday,created_at__lt=thursday+timedelta(days=1)).aggregate(Sum('sales_amount'))['sales_amount__sum']
+	friday_sales=Sales.objects.filter(created_at__gte=friday,created_at__lt=friday+timedelta(days=1)).aggregate(Sum('sales_amount'))['sales_amount__sum']
+	sartuday_sales=Sales.objects.filter(created_at__gte=sartuday,created_at__lt=sartuday+timedelta(days=1)).aggregate(Sum('sales_amount'))['sales_amount__sum']
+	print('today')
+	print(datetime.datetime.now())
+
+	today_sales=Sales.objects.filter(created_at__gte=datetime.date.today(),created_at__lt=datetime.date.today()+timedelta(days=1)).aggregate(Sum('sales_amount'))['sales_amount__sum']
+	print('today\'s date:{}'.format(datetime.date.today()))
+	print('today:{}'.format(today_sales))
+	print('Date monday:{}'.format(monday))
+	print("Sales monday:{}".format(monday_sales))
+	print('Date tuesday:{}'.format(tuesday))
+	print("Sales tuesday:{}".format(tuesday_sales))
+	print('Date wednesday:{}'.format(wednesday))
+	print("Sales wednesday:{}".format(wednesday_sales))
+	print('Date thursday:{}'.format(thursday))
+	print("Sales thursday:{}".format(thursday_sales))
+	print('Date friday:{}'.format(friday))
+	print("Sales friday:{}".format(friday_sales))
+	print('Date sartuday:{}'.format(sartuday))
+	print("Sales sartuday:{}".format(sartuday_sales))
+	print('Date sunday:{}'.format(sunday))
+	print("Sales sunday:{}".format(sunday_sales))
+
+	data = {
+	  'data': [sunday_sales,monday_sales,tuesday_sales,wednesday_sales,thursday_sales,friday_sales,sartuday_sales],
+	 'label': ["Sunday","Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Sartuday"],
+	 'order_id': 1233434,
+	}
+
+	return JsonResponse(data)
+
+
+
+@csrf_exempt
+@login_required(login_url='/login/')
+def OrderPdf(request, *args, **kwargs):
+	print('oldpdf')
+
+	data = {
+	  'today': datetime.date.today(), 
+	  'amount': 39.99,
+	 'customer_name': 'Cooper Mann',
+	 'order_id': 1233434,
+	}
+
+	pdf = render_to_pdf('inventory/pdforder.html', data)
+	return HttpResponse(pdf, content_type='application/pdf')
+
+
+@csrf_exempt
+@login_required(login_url='/login/')
+def OrderPdf_Auto(request, *args, **kwargs):
+	customer=Customer.objects.get(id=kwargs['id'])
+	if request.user.employee.employee_privillage<=privillage['assistantadmin']:
+		sales=Sales.objects.filter(Q(sales_authorized=False )|Q(sales_method_payment='loan'),customer=customer)
+	else:
+		user=request.user,customer=customer
+
+		sales=Sales.objects.filter(sales_received=False,user=request.user,customer=customer)
+	employee= Employee.objects.get(user=request.user)
+	items = Item.objects.all()
+	total=sales.aggregate(Sum('sales_amount'))
+	print(total)
+
+	print('custoemrid')
+	print(kwargs['id'])
+	template = get_template('inventory/pdforder.html')
+	context = {
+	 "order_id": 123,
+	 "customer_name": "John Cooper",
+	 "amount": 1399.99,
+	 "today": datetime.date.today(),
+	 'orders':sales,
+	 'customer':customer,
+	 'items':items,
+	 'employee':employee,
+	 'amount':'Tsh {:,.2f}'.format(total['sales_amount__sum']),
+	}
+	html = template.render(context)
+	pdf = render_to_pdf('inventory/pdforder.html', context)
+	if pdf:
+		response = HttpResponse(pdf, content_type='application/pdf')
+		filename = "{}_{}_Order.pdf".format(customer.customer_name,datetime.date.today())
+		content = "inline; filename='%s'" %(filename)
+		download = request.GET.get("download")
+		if download:
+			content = "attachment; filename='%s'" %(filename)
+		response['Content-Disposition'] = content
+		return response
+	return HttpResponse("Not found")
+
+
 @csrf_exempt
 @login_required(login_url='/login/')
 def resetPassword(request,*args,**kargs):

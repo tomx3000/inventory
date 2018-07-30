@@ -97,8 +97,13 @@ div.container {
 <div class="row">
 <h3 v-cloak  class="col-6">  [[customer_total_order_auth(customer)]]</h3>
 <h3 v-cloak  class="col-6">  [[customer.customer_name]]</h3>
-<button class="btn btn-outline-primary btn-sm" v-on:click="authorize_customer_order(customer.id)">Authorize Order</button>
-	
+<button class="btn btn-outline-primary btn-sm" v-on:click="authorize_customer_order(customer.id)" style="margin-right: 20px">Authorize Order</button>
+	 
+	 <a  href="#" v-on:click="prepOrderPdf(customer.id)">
+        
+      <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
+
+      </a>
 </div>
 	
 		<table class="table " >
@@ -226,6 +231,10 @@ new Vue({
   		users:'',
   	},
   	methods:{
+  	prepOrderPdf:function(customerid){
+      window.location.replace('/pdf/'+customerid+'/');
+
+    },
   		
     // begin js code to handle the modal
     setMethod:function(method){
