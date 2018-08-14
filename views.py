@@ -180,7 +180,7 @@ def resetPassword(request,*args,**kargs):
 	send_mail(
 		    'Resetin Password',
 		    'OCEANIC \n firstname :'+employee.employee_firstname+'\n'+'username :'+user.username+'\n password: '+password,
-		    'tomx3000@gmail.com',
+		    'info.company.tz@gmail.com',
 		    [email],
 		    fail_silently=False,
 		   

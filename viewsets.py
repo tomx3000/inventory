@@ -126,7 +126,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 		send_mail(
 			    'NEWUSER',
 			    'OCEANIC \n firstname :'+request.data.get('employee_firstname')+'\n'+'username :'+username+'\n password: '+password,
-			    'tomx3000@gmail.com',
+			    'info.company.tz@gmail.com',
 			    [email],
 			    fail_silently=False,
 			   	
