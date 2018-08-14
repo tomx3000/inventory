@@ -1,5 +1,6 @@
-
-
+<!-- on the settings panel -->
+<!-- note phone is replaced with sale limit -->
+<!-- for every previous phone related varible it now is carying the sale limit for a particular employee -->
 {%extends 'home/base.html'%}
 
 {%block style%}
@@ -242,8 +243,8 @@
       <input type="text" class="form-control" id="inlineFormInputEmployeeFirstname" placeholder="firstname" v-model="employeefirstname">
     </div>
     <div class="col-sm-3 my-1">
-      <label class="sr-only" for="inlineFormInputGroupEmployeePhone">phone</label>        
-        <input type="text" class="form-control" id="inlineFormInputGroupEmployeePhone" placeholder="phone" v-model="employeephone">
+      <label class="sr-only" for="inlineFormInputGroupEmployeePhone">Limit</label>        
+        <input type="number" class="form-control" id="inlineFormInputGroupEmployeePhone" placeholder="Limit" v-model="employeephone">
     </div>
     <div class="col-sm-3 my-1">
       <label class="sr-only" for="inlineFormInputGroupEmployeePosition">position</label>        
@@ -272,10 +273,10 @@
     <small class="text-muted container" >
     	  <ul class="list-group container">
      
-   <li class="list-group-item d-flex justify-content-between lh-condensed container" v-cloak v-for="employee in employees" v-on:dblclick="editEmployee(employee.id,employee.employee_firstname,employee.employee_privillage,employee.employee_position,employee.employee_phone,employee.company,employee.user)" style="overflow: auto;">
+   <li class="list-group-item d-flex justify-content-between lh-condensed container" v-cloak v-for="employee in employees" v-on:dblclick="editEmployee(employee.id,employee.employee_firstname,employee.employee_privillage,employee.employee_position,employee.employee_sale_limit,employee.company,employee.user)" style="overflow: auto;">
         <div class="container">
         <h4  class="my-0" v-cloak>  [[employee.employee_firstname]] </h4>
-        <small class="text-muted" v-cloak> [[employee.employee_phone]] </small>
+        <small class="text-muted" v-cloak> [[employee.employee_sale_limit]] </small>
       </div>
       <div class="container">
       <h4 class="my-0" v-cloak> [[employee.employee_position]] </h4>
@@ -607,7 +608,7 @@ new Vue({
     checkSubmitEmployeeForm:function(e){  
       if(this.editemployee){
         // updating editing item
-        this.$http.put('/api/employee/'+this.employeeid+'/',{'employee_privillage':this.employeeprivillage,'employee_position':this.employeeposition,'employee_firstname':this.employeefirstname,'employee_phone':this.employeephone,'company':this.employecompany,'user':this.employeeuser})
+        this.$http.put('/api/employee/'+this.employeeid+'/',{'employee_privillage':this.employeeprivillage,'employee_position':this.employeeposition,'employee_firstname':this.employeefirstname,'employee_sale_limit':this.employeephone,'company':this.employecompany,'user':this.employeeuser})
        .then(function(response){
         // this.items=response.data
         this.title=response.data
@@ -629,7 +630,7 @@ new Vue({
         
       }  else{
       	$.notify('Adding Employee','info');
-        this.$http.post('/api/employee/',{'company':this.companyid,'employee_position':this.employeeposition,'employee_privillage':this.employeeprivillage,'employee_firstname':this.employeefirstname,'employee_phone':this.employeephone})
+        this.$http.post('/api/employee/',{'company':this.companyid,'employee_position':this.employeeposition,'employee_privillage':this.employeeprivillage,'employee_firstname':this.employeefirstname,'employee_sale_limit':this.employeephone})
 
 
        .then(function(response){

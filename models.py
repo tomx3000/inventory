@@ -80,11 +80,12 @@ class Employee(models.Model):
 	employee_firstname=models.CharField(max_length=20)
 	employee_secondname=models.CharField(max_length=20,null=True,blank=True)
 	employee_thirdname=models.CharField(max_length=20,null=True,blank=True)
-	employee_phone=models.CharField(max_length=20)
+	employee_phone=models.CharField(max_length=20,null=True,blank=True)
 	employee_email=models.EmailField(null=True,blank=True)
 	employee_privillage=models.IntegerField(default=1)
 	employee_position=models.CharField(max_length=20)
 	employee_address=models.CharField(max_length=30,null=True,blank=True)
+	employee_sale_limit=models.FloatField(default=50)
 	created_at=models.DateTimeField(auto_now_add=True,null=True,blank=True)
 	updated_at=models.DateTimeField(auto_now=True,null=True,blank=True)
 
@@ -135,6 +136,8 @@ class Item(models.Model):
 		
 		super(Item,self).save(*args,**kargs)
 
+	class Meta:
+		ordering=['item_name']
 
 
 class Inventory(models.Model):
@@ -162,6 +165,8 @@ class Sales(models.Model):
 	customer=models.ForeignKey(Customer,on_delete=models.CASCADE)
 	sales_quantity=models.FloatField()
 	sales_amount=models.FloatField()
+	# sales_balance is used to hold loans , then updates sales_amount on payment 
+	sales_balance=models.FloatField(default=0)
 	sales_loan=models.BooleanField(default=True)
 	sales_method_payment=models.CharField(max_length=10,default="cash")
 	# sets pending for saler
@@ -180,7 +185,9 @@ class Sales(models.Model):
 	class Meta:
 		ordering=['-id']
 
-	pass
+
+
+
 class Account(models.Model):
 	account_name=models.CharField(max_length=20)
 	account_user=models.ForeignKey(User,on_delete=models.CASCADE)

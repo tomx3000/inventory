@@ -64,6 +64,9 @@ div.container {
       </div>
       <div class="modal-body ">
 
+     <div class="form-label-group" v-cloak style="margin-bottom: 10px;">
+        <input type="number" id="inputloanpaid" class="form-control" placeholder=" amount paid" v-model='loanpaid' required autofocus>
+      </div>
              <!-- buttons selection -->
   <div class="btn-group btn-group-toggle " data-toggle="buttons">
   <label class="btn btn-secondary " v-on:click="setMethod('loan')">
@@ -134,7 +137,8 @@ div.container {
  --><!--       <td v-cloak>  Issuer</td>
  -->      <td v-if="item.id == sale.item" v-for ="item in items" v-cloak>[[item.item_name]]</td>
       <td v-cloak>[[sale.sales_quantity]]</td>
-      <td v-cloak>[[sale.sales_amount]]</td>
+      <td v-cloak v-if="sale.sales_method_payment=='loan'">[[sale.sales_balance]]</td>
+      <td v-cloak v-else>[[sale.sales_amount]]</td>
 	  <td v-cloak v-if="sale.sales_received && !sale.sales_authorized"> <button class="btn btn-small btn-outline-dark" v-on:click="authorizeSale(sale.id)">Authorize</button></td>
 	  <td v-cloak v-if="!sale.sales_received && !sale.sales_authorized"> Pending ....</td>
 	  <td v-cloak v-if="sale.sales_method_payment=='loan' && sale.sales_authorized"> Authorized Loan</td>
@@ -229,6 +233,7 @@ new Vue({
   		customers:'',
   		employees:'',
   		users:'',
+  		loanpaid:0,
   	},
   	methods:{
   	prepOrderPdf:function(customerid){
@@ -275,7 +280,8 @@ new Vue({
     },
     updateSalePaymentMethod:function(cash){
       saleid=this.sale_method_id
-     this.$http.post('/paymentmethod/'+saleid+'/'+cash+'/',{})
+      loan=this.loanpaid
+     this.$http.post('/paymentmethodauth/'+saleid+'/'+cash+'/'+loan+'/',{})
        .then(function(response){
         // this.items=response.data
       this.title=response.data

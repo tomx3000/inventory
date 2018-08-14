@@ -2,8 +2,6 @@ from django.shortcuts import render,get_object_or_404,redirect
 from django.http import HttpResponse,HttpResponseRedirect
 from django.views import View
 from django.contrib import messages
-
-
 from .models import Sales,Store,Employee,Company,Customer,Inventory,Item,Account,Expense
 from .forms import ItemForm
 from django.views.decorators.csrf import csrf_exempt
@@ -13,6 +11,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Count, F, Value
+
 import csv
 # Create your views here.
 
@@ -34,16 +34,24 @@ from django.utils import timezone
 @csrf_exempt
 @login_required(login_url='/login/')
 def getGraphBata(request, *args, **kwargs):
-	print('oldpdf')
+	print('graph')
 	days_dict={1:'Monday',2:'Tuesday',3:'Wednesday',4:'Thursday',5:'Friday',6:'Sartuday',7:'Sunday'}
 
-	sunday=datetime.date.today()-timedelta(days=datetime.date.today().isocalendar()[2]-7)
-	monday=datetime.date.today()-timedelta(days=datetime.date.today().isocalendar()[2]-1)
-	tuesday=datetime.date.today()-timedelta(days=datetime.date.today().isocalendar()[2]-2)
-	wednesday=datetime.date.today()-timedelta(days=datetime.date.today().isocalendar()[2]-3)
-	thursday=datetime.date.today()-timedelta(days=datetime.date.today().isocalendar()[2]-4)
-	friday=datetime.date.today()-timedelta(days=datetime.date.today().isocalendar()[2]-5)
-	sartuday=datetime.date.today()-timedelta(days=datetime.date.today().isocalendar()[2]-6)
+	def deltaSelect(day):
+		delta=datetime.date.today().isocalendar()[2]-day
+		print(delta)
+		if delta<0:
+			print(delta)
+			delta=7+delta
+		return delta
+
+	sunday=datetime.date.today()-timedelta(days=deltaSelect(0))
+	monday=datetime.date.today()-timedelta(days=deltaSelect(1))
+	tuesday=datetime.date.today()-timedelta(days=deltaSelect(2))
+	wednesday=datetime.date.today()-timedelta(days=deltaSelect(3))
+	thursday=datetime.date.today()-timedelta(days=deltaSelect(4))
+	friday=datetime.date.today()-timedelta(days=deltaSelect(5))
+	sartuday=datetime.date.today()-timedelta(days=deltaSelect(6))
 	
 	sunday_sales=Sales.objects.filter(created_at__gte=sunday,created_at__lt=sunday+timedelta(days=1)).aggregate(Sum('sales_amount'))['sales_amount__sum']
 	monday_sales=Sales.objects.filter(created_at__gte=monday,created_at__lt=monday+timedelta(days=1)).aggregate(Sum('sales_amount'))['sales_amount__sum']
@@ -54,6 +62,8 @@ def getGraphBata(request, *args, **kwargs):
 	sartuday_sales=Sales.objects.filter(created_at__gte=sartuday,created_at__lt=sartuday+timedelta(days=1)).aggregate(Sum('sales_amount'))['sales_amount__sum']
 	print('today')
 	print(datetime.datetime.now())
+	print('iso calender position for today')
+	print(datetime.date.today().isocalendar()[2])
 
 	today_sales=Sales.objects.filter(created_at__gte=datetime.date.today(),created_at__lt=datetime.date.today()+timedelta(days=1)).aggregate(Sum('sales_amount'))['sales_amount__sum']
 	print('today\'s date:{}'.format(datetime.date.today()))
@@ -80,7 +90,6 @@ def getGraphBata(request, *args, **kwargs):
 	}
 
 	return JsonResponse(data)
-
 
 
 @csrf_exempt
@@ -361,13 +370,34 @@ def AcceptSale(request,*args,**kargs):
 	return HttpResponse('ok')
 
 
+@csrf_exempt
+@login_required(login_url='/login/')
+def UpdateSalesPaymentMethodAuth(request,*args,**kargs):
+	print('taking loan')
+	sale=Sales.objects.get(id=kargs['saleid'])
+	print('amount paid')
+	print(float(kargs['amount']))
+	balance=sale.sales_balance-float(kargs['amount'])
+	sale.sales_balance=balance
+	print('balance')
+	print(balance)
+	if balance<=0:
+		sale.sales_method_payment=kargs['cash']
+
+	sale.save()
+	# updating the quantity of item sold 
+	print(kargs['saleid'])
+	# print(request.POST)
+	return HttpResponse('ok')
+
 
 @csrf_exempt
 @login_required(login_url='/login/')
 def UpdateSalesPaymentMethod(request,*args,**kargs):
-	
+	print('geting single loan')
 	sale=Sales.objects.filter(id=kargs['saleid'])
-	updatesale=sale.update(sales_method_payment=kargs['cash'])
+	amount=0
+	updatesale=sale.update(sales_method_payment=kargs['cash'],sales_balance=F('sales_amount'))
 
 	# updating the quantity of item sold 
 	print(kargs['saleid'])
@@ -378,9 +408,11 @@ def UpdateSalesPaymentMethod(request,*args,**kargs):
 @login_required(login_url='/login/')
 def UpdateCustomerSalesPaymentMethod(request,*args,**kargs):
 	customer=Customer.objects.get(id=kargs['customerid'])
-
-	sale=Sales.objects.filter(customer=customer,sales_received=False).update(sales_method_payment=kargs['cash'])
-
+	amount=0
+	print('multiplesss...')
+	print(kargs['cash'])
+	updatesale=Sales.objects.filter(customer=customer,sales_received=False).update(sales_method_payment=kargs['cash'],sales_balance=F('sales_amount'))
+	
 	return HttpResponse('ok')
 
 @csrf_exempt

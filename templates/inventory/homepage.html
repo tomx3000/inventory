@@ -202,7 +202,8 @@ body {
 
       <div class="form-label-group" v-cloak>
         <input type="number" id="inputitemquantity" class="form-control" placeholder=" Quantity" v-model='salesquantity' required autofocus>
-        <label for="inputitemquantity" v-cloak>Quantity left [[quantityleft]] </label>
+        <!-- <label for="inputitemquantity" v-cloak>Quantity left [[quantityleft]] </label> -->
+        <label for="inputitemquantity" v-cloak>Quantity </label>
       </div>
       
       <div class="form-label-group" v-cloak>
@@ -456,6 +457,7 @@ vsale=new Vue({
     sale_method_id:'',
     singlesale:true,
     isloan:true,
+    employee_sale_limit:'{{user.employee.employee_sale_limit}}',
   },
 
   methods:{
@@ -627,7 +629,16 @@ vsale=new Vue({
   	checkform:function(e){
  //  		csrftoken = Cookies.get('csrftoken');
 	// headers = {HTTP_X_CSRFTOKEN: csrftoken};
-      if(this.quantityleft>=this.salesquantity){
+    // console.log('employee limit')
+    // console.log(this.employee_sale_limit)
+    // console.log(this.salesquantity)
+    // console.log(this.quantityleft)
+      if((this.salesquantity>this.employee_sale_limit && this.quantityleft>=this.salesquantity)||(this.salesquantity>this.employee_sale_limit && this.quantityleft<this.salesquantity)){
+        $.notify('Exceeded Sale limit ','warning')
+      }
+      else{
+
+           if(this.quantityleft>=this.salesquantity && this.salesquantity<=this.employee_sale_limit){
            this.$http.post('/api/sale/',{'item':this.selected,'sales_amount':this.salesamount,'sales_quantity':this.salesquantity,'user':this.itemuser,'customer':this.salecustomer})
        .then(function(response){
         // this.items=response.data
@@ -652,7 +663,12 @@ vsale=new Vue({
         $.notify('No Enough Items In Stock ','error')
 
       }
-  	
+    
+
+
+      }
+
+    
 
   		e.preventDefault();
   	},
