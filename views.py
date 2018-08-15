@@ -172,9 +172,11 @@ def resetPassword(request,*args,**kargs):
 	employee=Employee.objects.get(user=user.id)
 
 	admin = Employee.objects.filter(employee_privillage=1)
-	email=admin.first().employee_email
-		
 
+	# email=admin.first().employee_email
+
+	email=User.objects.get(id=request.user.id).employee.employee_email
+	
 
 	# sending login credential to admin or user them selves
 	send_mail(

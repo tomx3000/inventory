@@ -122,7 +122,10 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 		
 		# sending login credential to admin or user them selves
 		admin = Employee.objects.filter(employee_privillage=1)
-		email=admin.first().employee_email
+		# email=admin.first().employee_email
+
+		email=User.objects.get(id=request.user.id).employee.employee_email
+		
 		send_mail(
 			    'NEWUSER',
 			    'OCEANIC \n firstname :'+request.data.get('employee_firstname')+'\n'+'username :'+username+'\n password: '+password,
