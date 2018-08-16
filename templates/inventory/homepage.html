@@ -7,6 +7,8 @@
 <link rel="stylesheet" href="{% static "css/floating-labels.css" %}" /> -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
+
+
 <style type="text/css">
 
     :root {
@@ -94,6 +96,9 @@ body {
 
 
 </style>
+
+
+
 {%endblock%}
 {%block inputsearch%}
 
@@ -189,7 +194,13 @@ body {
 	  </select>
 	</div>
 
-      <div class="input-group mb-3">
+<!--   <div class=" mb-3" >
+ 
+  <v-select label="customer_name" :options="customersselect"   v-model="salecustomer"   placeholder="Customer"></v-select>
+
+</div> -->
+
+   <!--    <div class="input-group mb-3">
 	  <div class="input-group-prepend">
 	    <label class="input-group-text" for="inputGroupSelect01">Product</label>
 	  </div>
@@ -197,18 +208,25 @@ body {
 	    <option disabled value="" >Choose</option>
 	    <option v-bind:value="item.id" v-for="item in itemsselect" v-cloak>[[item.item_name]]</option>
 	  </select>
-	</div>
+	</div> -->
+<!-- sample select picker -->
+<div class=" mb-3">
+ 
+  <v-select label="item_name" :options="itemsselect"   v-model="selected" v-on:input="setPrice(selected)"  placeholder="Product"></v-select>
 
+</div>
 
+<!-- end select picker -->
       <div class="form-label-group" v-cloak>
         <input type="number" id="inputitemquantity" class="form-control" placeholder=" Quantity" v-model='salesquantity' required autofocus>
         <!-- <label for="inputitemquantity" v-cloak>Quantity left [[quantityleft]] </label> -->
         <label for="inputitemquantity" v-cloak>Quantity </label>
       </div>
       
-      <div class="form-label-group" v-cloak>
+      <div class="form-label-group" v-cloak >
         <input type="number" id="inputitemamount" class="form-control" placeholder="Amount" v-model='salesamount' required autofocus>
-        <label for="inputitemamount" v-cloak>Amount : minimum allowed price [[maxdiscount]]/= </label>
+        <label for="inputitemamount" v-cloak >minimum allowed price [[maxdiscount]]/= 
+        </label>
       </div>
 
       
@@ -345,7 +363,11 @@ body {
 {%endblock%}
 
 {%block script%}
+
+
 <script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script>
+
+
  <script>
     moment().format();
 </script>
@@ -363,6 +385,9 @@ body {
 
 // 
 // 
+
+Vue.component('v-select', VueSelect.VueSelect);
+
 new Vue({
   delimiters: ['[[', ']]'],
   el: '#searchorder',
@@ -450,14 +475,15 @@ vsale=new Vue({
     totalacceptsale:0,
     totalsale:0,
     odered_customer:'',
-    customersselect:'',
-    itemsselect:'',
+    customersselect:[],
+    itemsselect:[],
     payment_method:'cash',
     customer_method_id:'',
     sale_method_id:'',
     singlesale:true,
     isloan:true,
     employee_sale_limit:'{{user.employee.employee_sale_limit}}',
+    userid:'{{user.id}}',
   },
 
   methods:{
@@ -602,8 +628,9 @@ vsale=new Vue({
     customer_has_order:function(customer){
   
       found=false;
+      var userid=this.itemuser
      $.each(this.sales, function(key, value) {
-           if(!value.sales_received && value.customer==customer.id){
+           if(!value.sales_received && value.customer==customer.id && value.user==userid){
               found=true;
              }
          });
@@ -629,27 +656,32 @@ vsale=new Vue({
   	checkform:function(e){
  //  		csrftoken = Cookies.get('csrftoken');
 	// headers = {HTTP_X_CSRFTOKEN: csrftoken};
-    // console.log('employee limit')
-    // console.log(this.employee_sale_limit)
-    // console.log(this.salesquantity)
-    // console.log(this.quantityleft)
-      if((this.salesquantity>this.employee_sale_limit && this.quantityleft>=this.salesquantity)||(this.salesquantity>this.employee_sale_limit && this.quantityleft<this.salesquantity)){
-        $.notify('Exceeded Sale limit ','warning')
+    console.log('employee limit')
+    console.log(this.employee_sale_limit)
+    console.log(this.salesquantity)
+    console.log(this.quantityleft)
+    var limit_emp=parseInt(this.employee_sale_limit)
+    var sale_quant=parseInt(this.salesquantity)
+    var left_item=parseInt(this.quantityleft)
+
+
+      if(sale_quant > limit_emp){
+        $.notify('Exceeded Sale limit ','warn')
       }
       else{
 
-           if(this.quantityleft>=this.salesquantity && this.salesquantity<=this.employee_sale_limit){
-           this.$http.post('/api/sale/',{'item':this.selected,'sales_amount':this.salesamount,'sales_quantity':this.salesquantity,'user':this.itemuser,'customer':this.salecustomer})
+           if(left_item>=sale_quant && sale_quant<=limit_emp){
+           this.$http.post('/api/sale/',{'item':this.selected.id,'sales_amount':this.salesamount,'sales_quantity':this.salesquantity,'user':this.itemuser,'customer':this.salecustomer})
        .then(function(response){
         // this.items=response.data
         this.title=response.data
-        this.updateItemsOnCreateSales(this.selected,this.salesquantity)
+        this.updateItemsOnCreateSales(this.selected.id,this.salesquantity)
          this.getSales()
          this.salesamount=0,
          this.salesquantity=1,
          this.selected=''
          this.maxdiscount=''
-      this.quantityleft=''
+         this.quantityleft=''
       // this.salecustomer=''
 
         // alert('response')
@@ -660,7 +692,7 @@ vsale=new Vue({
 
       }else{
 
-        $.notify('No Enough Items In Stock ','error')
+        $.notify('Exceeded Sale limit ','error')
 
       }
     
@@ -791,22 +823,31 @@ vsale=new Vue({
 				     }
 				 });
 		return this.number_to_cash(amount)
-  	},setPrice:function(id){
-  		
-  		var amount;
-  		var discount;
-  		var itemquantity  	
-		$.each(this.items, function(key, value) {
-			     if(value.id == id){
-			     	amount=value.item_price
-			     	discount=value.item_discount
-			     	itemquantity=value.item_size
-				     }
-				 });
+  	},setPrice:function(object){
+  		// console.log('setting price')
+    //   console.log(id)
+      var amount;
+      var discount;
+      var itemquantity
+      if(object==null){
+        this.salesamount=0
+         this.salesquantity=1
+      }else{
+        $.each(this.items, function(key, value) {
+           if(value.id == object.id){
+            amount=value.item_price
+            discount=value.item_discount
+            itemquantity=value.item_size
+             }
+         });
+    
+    this.itemprice=amount
+    this.maxdiscount=amount*(1-(discount/100))
+    this.quantityleft=itemquantity
+      }
+  		  	
 		
-		this.itemprice=amount
-		this.maxdiscount=amount*(1-(discount/100))
-		this.quantityleft=itemquantity
+    // console.log('price set')
   	},
   	parseDate:function(date){
 

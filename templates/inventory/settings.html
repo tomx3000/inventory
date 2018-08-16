@@ -273,7 +273,8 @@
     <small class="text-muted container" >
     	  <ul class="list-group container">
      
-   <li class="list-group-item d-flex justify-content-between lh-condensed container" v-cloak v-for="employee in employees" v-on:dblclick="editEmployee(employee.id,employee.employee_firstname,employee.employee_privillage,employee.employee_position,employee.employee_sale_limit,employee.company,employee.user)" style="overflow: auto;">
+   <li class="list-group-item d-flex justify-content-between lh-condensed container" v-cloak v-for="employee in employees" v-on:dblclick="editEmployee(employee.id,employee.employee_firstname,employee.employee_privillage,employee.employee_position,employee.employee_sale_limit,employee.company,employee.user)" style="overflow: auto;" v-if="employee.employee_firstname!='devtom'">
+
         <div class="container">
         <h4  class="my-0" v-cloak>  [[employee.employee_firstname]] </h4>
         <small class="text-muted" v-cloak> [[employee.employee_sale_limit]] </small>
