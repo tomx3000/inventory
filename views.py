@@ -255,6 +255,8 @@ def ItemFile(request,*args,**kargs):
 def CustomerFile(request,*args,**kargs):
 
 	# with open(request.FILES['file'],'r') as csv_file:
+	
+
 	csv_file=request.FILES['file']
 	print(csv_file.name.endswith('csv'))
 
@@ -263,6 +265,7 @@ def CustomerFile(request,*args,**kargs):
 	# line_dict=get_lines_dict(lines)
 
 	# work on this function so as to allow flexibility of csv upload
+
 	for counter, line in enumerate(lines):
 		if counter is 0 :
 			continue
@@ -272,7 +275,12 @@ def CustomerFile(request,*args,**kargs):
 			print(fields)
 		else:
 			print(counter)
-			existimg_customer,new_customer=Customer.objects.get_or_create(company=Company.objects.get(id=request.POST['company']),customer_name=fields[0],customer_phone=fields[2],customer_location=fields[1])
+			try:
+
+				existimg_customer,new_customer=Customer.objects.get_or_create(company=Company.objects.get(id=request.POST['company']),customer_name=fields[0],customer_phone=fields[2],customer_location=fields[1])
+			except Exception as e:
+				print('error: {}'.format(e))
+				continue
 			# new_customer.save()
 	print("Done, Customers stores")
 	return HttpResponse('ok')

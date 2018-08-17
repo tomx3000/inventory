@@ -6,7 +6,6 @@ from django.contrib.auth.models import User
 # from django.contrib.auth.models import AbstractUser
 
 
-
 SOMEFIXED = getattr(settings,'FIXE_VALUE',3)
 
 class ItemManager(models.Manager):
@@ -57,8 +56,9 @@ class Store(models.Model):
 
 
 class Customer(models.Model):
+	# adjusting customer name to unique name only
 	company=models.ForeignKey(Company,on_delete=models.CASCADE,null=True,blank=True)
-	customer_name=models.CharField(max_length=20,null=True,blank=True)
+	customer_name=models.CharField(max_length=20,unique=True)
 	customer_transport=models.CharField(max_length=20,null=True,blank=True)
 	customer_phone=models.CharField(max_length=20,null=True,blank=True)
 	customer_location=models.CharField(max_length=30,null=True,blank=True)
@@ -70,7 +70,7 @@ class Customer(models.Model):
 		return str(self.customer_name)
 
 	class Meta:
-		ordering=['-id']
+		ordering=['customer_name']
 
 
 	pass

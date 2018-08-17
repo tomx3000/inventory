@@ -255,6 +255,7 @@ wm = new Vue({
        .then(function(response){
         // this.items=response.data
          this.title=response.data
+         console.log(this.title)
          this.editcustomer=false;
          this.customername='';
          this.customertransport='';
@@ -310,6 +311,7 @@ wm = new Vue({
         // this.items=response.data
         this.title=response.data
          // this.getSales()
+         console.log(this.title)
          this.customername='';
          this.customertransport='';
          this.customerlocation='';

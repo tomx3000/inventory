@@ -22,6 +22,17 @@ div.header {
 div.container {
     padding: 10px;
 }
+
+/*for numbering tables*/
+.css-serial {
+  counter-reset: serial-number;  /* Set the serial number counter to 0 */
+}
+
+.css-serial td:first-child:before {
+  counter-increment: serial-number;  /* Increment the serial number counter */
+  content: counter(serial-number);  /* Display the counter */
+}
+
 </style>
 {%endblock%}
 {%block inputsearch%}
@@ -93,7 +104,6 @@ div.container {
   </div>
 </div>
 
-
 <!-- end demo $$$$$$$$$$$$$$$$$$$$$$$$$$$$ -->
 
 <div v-for="customer in customers" v-if="customer_has_order_auth(customer)">
@@ -109,7 +119,7 @@ div.container {
       </a>
 </div>
 	
-		<table class="table " >
+		<table class="table css-serial" >
   <thead class="">
     <tr>
       <th scope="col">No</th>
@@ -127,7 +137,7 @@ div.container {
   </thead>
   <tbody class="">
     <tr v-for="sale in sales" v-if="( !sale.sales_authorized && sale.customer==customer.id )|| (sale.sales_method_payment=='loan' && sale.customer==customer.id)" v-cloak>
-      <th scope="row" v-cloak>[[sale.id]]</th>
+      <td scope="row" v-cloak></td>
       <td v-cloak> [[parseDate(sale.created_at)]] </td>
       <td v-cloak v-for="user in users" v-if="user.id==sale.user"> <span v-for="employee in employees" v-if="employee.user == user.id" v-cloak>
       	[[employee.employee_firstname]]
@@ -381,7 +391,7 @@ new Vue({
              }
          });
 
-      amount = 'Tsh' + amount.toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+      amount = 'Tsh' + amount.toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")+'  ';
 
      
      return amount;

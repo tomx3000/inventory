@@ -94,6 +94,15 @@ body {
   color: #777;
 }
 
+/*for numbering tables*/
+.css-serial {
+  counter-reset: serial-number;  /* Set the serial number counter to 0 */
+}
+
+.css-serial td:first-child:before {
+  counter-increment: serial-number;  /* Increment the serial number counter */
+  content: counter(serial-number);  /* Display the counter */
+}
 
 </style>
 
@@ -241,12 +250,14 @@ body {
 	overflow-y: auto;
 	overflow-x: auto;">
 
-	<table class="table">
+	<table class="table css-serial" >
   <thead>
     <tr>
       <th scope="col">#</th>
       <th scope="col">Date</th>
       <th scope="col">Customer Name</th>
+      <th scope="col">Transportation</th>
+      <th scope="col">Destination</th>
       <th scope="col">Product Name</th>
       <th scope="col">Quantity</th>
       <th scope="col">Cost</th>
@@ -255,16 +266,21 @@ body {
     </tr>
   </thead>
   <tbody>
-    <tr v-for="sale in sales" v-if="(sale.sales_received && !sale.sales_authorized && sale.user==itemuser) || (sale.sales_method_payment=='loan' && sale.user==itemuser) " v-cloak  >
-      <th scope="row" v-cloak>[[sale.id]]</th>
+  {%with count=0%}
+    <tr v-for="(sale,index) in sales" v-if="(sale.sales_received && !sale.sales_authorized && sale.user==itemuser) || (sale.sales_method_payment=='loan' && sale.user==itemuser) " v-cloak onclick="">
+      <td scope="row" v-cloak></td>
       <td v-cloak> [[parseDate(sale.created_at)]] </td>
+
       <td v-for="customer in customers" v-if="customer.id == sale.customer" v-cloak>[[customer.customer_name]]</td>
+      <td v-for="customer in customers" v-if="customer.id == sale.customer" v-cloak>[[customer.customer_transport]]</td>
+      <td v-for="customer in customers" v-if="customer.id == sale.customer" v-cloak>[[customer.customer_location]]</td>
+
       <td v-if="item.id == sale.item" v-for ="item in items" v-cloak>[[item.item_name]]</td>
       <td v-cloak>[[sale.sales_quantity]]</td>
       <td v-cloak>[[sale.sales_amount]]</td>
       <td v-cloak>[[sale.sales_method_payment]]</td>
     </tr>
-    
+    {%endwith%}
   </tbody>
 </table>
 
@@ -484,9 +500,27 @@ vsale=new Vue({
     isloan:true,
     employee_sale_limit:'{{user.employee.employee_sale_limit}}',
     userid:'{{user.id}}',
+    
   },
 
   methods:{
+    getFilteredSales:function(sales){
+      var newsale;
+      newsale = sales.filter(function(sale){
+        return (sale.sales_received && !sale.sales_authorized && sale.user==this.itemuser) || (sale.sales_method_payment=='loan' && sale.user==this.itemuser)
+      })
+      return newsale;
+    },
+    list_position:function(index){
+      // this.sales=this.getFilteredSales(this.sales)
+        // list=[]
+        // list.push(index)
+        // console.log(list)
+        // var x = document.getElementById("saletableid").rows.length-1;
+        // return index.rowIndex
+
+        return index
+    },
     prepOrderPdf:function(customerid){
       window.location.replace('/pdf/'+customerid+'/');
 

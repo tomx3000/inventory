@@ -3,7 +3,17 @@
 {%extends 'home/base.html'%}
 
 {%block style%}
+<style type="text/css">
+	/*for numbering tables*/
+.css-serial {
+  counter-reset: serial-number;  /* Set the serial number counter to 0 */
+}
 
+.css-serial td:first-child:before {
+  counter-increment: serial-number;  /* Increment the serial number counter */
+  content: counter(serial-number);  /* Display the counter */
+}
+</style>
 {%endblock%}
 
 {%block inputsearch%}
@@ -29,33 +39,42 @@
 <div id="inventory">
 	<h1 v-cloak>[[inventory]]</h1>
 	<div class="row">
-		<div class="col-lg-8 col-mid-8 col-sm-12 col-12 container">
+		<div class="col-lg-8 col-mid-8 col-sm-12 col-12 container" style=" max-width: 700px;
+	overflow-y: auto;
+	overflow-x: auto;">
 		<div v-for="customer in customers" v-if="customer_has_order_auth_issued(customer)">
 		<div class="row">
 <button class="btn  btn-outline-primary btn-small col-3 "  value="Issue Order" v-on:click="issue_customer_order(customer.id)">Issue Order</button>
 <h3 v-cloak class="col-3 offset-6">  [[customer.customer_name]]</h3>
 	
 </div>
-							<table class="table">
+<table class="table css-serial" >
   <thead>
     <tr>
       <th scope="col">#</th>
       <th scope="col">Date</th>
       <th scope="col">Seller</th>
-<!--       <th scope="col">Customer</th>
- --><!--       <th scope="col">Issuer</th>
- -->      <th scope="col">Product Name</th>
+      <th scope="col">Transportation</th>
+      <th scope="col">Destination</th>
+
+   <th scope="col">Product Name</th>
       <th scope="col">Quantity</th>
       <th scope="col">Status</th>
     </tr>
   </thead>
   <tbody>
     <tr v-for="sale in sales" v-if="sale.sales_received && !sale.sales_issue_item && sale.customer==customer.id" v-cloak>
-      <th scope="row" v-cloak>[[sale.id]]</th>
+      <td scope="row" v-cloak></td>
       <td v-cloak> [[parseDate(sale.created_at)]] </td>
       <td v-cloak v-for="user in users" v-if="user.id==sale.user"> <span v-for="employee in employees" v-if="employee.user == user.id" v-cloak>
       	[[employee.employee_firstname]]
       </span>
+      </td>
+      <td v-cloak>[[customer.customer_transport]]
+      	
+      </td>
+      <td v-cloak>[[customer.customer_location]]
+      	
       </td>
 <!--       <td v-cloak >  [[customer.customer_name]]</td>
  --><!--       <td v-cloak>  Issuer</td>
@@ -73,10 +92,9 @@
 			
 		</div>
 
-		<!-- item side -->
+<!-- item side -->
 
-
-<div class="col-lg-3 col-mid-3 col-sm-12 col-12 container" st>
+<div class="col-lg-4 col-mid-4 col-sm-12 col-12 container" >
 
   <ul class="list-group">
      
