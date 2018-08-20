@@ -180,7 +180,7 @@ class Sales(models.Model):
 
 
 	def __str__(self):
-		return str(self.item.item_name)+" :"+str(self.sales_amount)
+		return "Name:"+str(self.item.item_name)+" : Amount:"+str(self.sales_amount)+" :Balance"+str(self.sales_balance)+' method: '+str(self.sales_method_payment)
 
 	class Meta:
 		ordering=['-id']

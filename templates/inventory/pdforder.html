@@ -100,7 +100,9 @@
       {% endfor %}
       
       <th style=" font-weight: normal;">{{order.sales_quantity}}</thth>
-      <th style=" font-weight: normal;">{{order.sales_amount}}</th>
+      <th style=" font-weight: normal;">{{order.sales_amount}}
+
+      </th>
     </tr>
 
 
@@ -120,12 +122,17 @@
              <hr class='hrItem ' />
              <div class="details">
                 <span style="font-weight: bold;">Total Amount: {{amount}}</span>
-
+                
              </div>
               
      
      {%endwith%}
      </body>
-
+<script type="text/javascript">
+    
+    function formatNumber(amount){
+       return 'Tsh' + amount.toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+    }
+</script>
 
  </html>

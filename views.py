@@ -379,6 +379,46 @@ def AcceptSale(request,*args,**kargs):
 	# print(request.POST)
 	return HttpResponse('ok')
 
+# remeber the best way to implemet a sale order and handling loans is by implementing a whole new order table linked to the sales table 
+# due to the sake of time and inconvinience a hack around is implemented by navingating some boolean fields in the sales table and paymet_methods column and balaance column is added for this exact purpose
+# in future a much more simpler implementation should eliminate this processing bottleneck
+@csrf_exempt
+@login_required(login_url='/login/')
+def UpdateCustomerSalesPaymentMethodAuth(request,*args,**kargs):
+	# customer loan acceptance code
+	customer=Customer.objects.get(id=kargs['customerid'])
+	# note cash here means the payment method
+	print("method:"+kargs['cash'])
+
+	customer_loan_order=Sales.objects.filter(customer=customer,sales_method_payment="loan")
+
+	customer_order_loan_balance=customer_loan_order.aggregate(Sum('sales_balance'))['sales_balance__sum']
+
+	number_of_sales_in_orders=customer_loan_order.count()
+
+	def isCreditFree(amountpaid,totalbalance):
+		free =False
+		if amountpaid >= round(totalbalance):free=True
+		return free
+
+	if isCreditFree(float(kargs['amount']),customer_order_loan_balance):
+		updatedsales=customer_loan_order.update(sales_method_payment=kargs['cash'],sales_balance=F('sales_amount'))
+		print('no more loan')
+	else:
+		current_balance=round(customer_order_loan_balance)-float(kargs['amount'])
+		# the actual hack
+		# i save the total loan balance in each order item equally distributing it, for later reconstruction
+		balance_per_sale=current_balance/number_of_sales_in_orders
+
+		updatedsales=customer_loan_order.update(sales_balance=balance_per_sale)
+		print('balance to be paid')
+		print(current_balance)
+		print('updated balance')
+		print(balance_per_sale)
+		print('updated end')
+
+	return HttpResponse('ok')
+
 
 @csrf_exempt
 @login_required(login_url='/login/')

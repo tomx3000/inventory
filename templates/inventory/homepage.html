@@ -249,6 +249,7 @@ body {
 	<div class="row"  style=" max-height: 500px;
 	overflow-y: auto;
 	overflow-x: auto;">
+  <!-- received orders -->
 
 	<table class="table css-serial" >
   <thead>
@@ -286,7 +287,7 @@ body {
 
 
 
-		
+		<!-- end received orders -->
 </div>
 <!-- <ul class="list-group">
   <li class="list-group-item d-flex justify-content-between lh-condensed">
@@ -318,8 +319,8 @@ body {
         
       </div>
       <div class="container">
-
-      <h4 class="text-muted align-right" v-cloak>  [[customer_total_order(customer)]]</h4>
+       <h4 class="text-muted align-right" v-cloak v-if="customer_has_loan(customer)">  [[number_to_cash(customer_total_loan_order(customer))]]</h4> 
+      <h4 class="text-muted align-right" v-cloak v-else>  [[number_to_cash(customer_total_order(customer))]]</h4>
 
       <a  href="#" v-on:click="prepOrderPdf(customer.id)">
         
@@ -330,6 +331,22 @@ body {
         
       </div>
   </li>
+<!-- loan -->
+<li class="list-group-item d-flex justify-content-between lh-condensed" v-if="customer_has_loan(customer)">
+      <div class="container">
+   
+        <h4  class="" v-cloak>Loan </h4>
+        
+      </div>
+      <div class="container">
+
+      <h4 class="text-muted align-right" v-cloak>  [[number_to_cash(total_customer_loan(customer))]]</h4>
+
+       
+      </div>
+  </li>
+<!-- end loan -->
+
 
 </ul> 
 <div >
@@ -342,7 +359,7 @@ body {
                   <small class="text-muted" v-cloak> [[sale.sales_quantity]] </small>
                 </div>
                 <div class="container">
-                <span v-cloak class="text-muted">Tsh [[sale.sales_amount]] </span>
+                <span v-cloak class="text-muted"> [[number_to_cash(sale.sales_amount)]] </span>
 
                 <br>
                 <!-- <span aria-hidden="true"  v-if="customer.id == sale.customer" v-cloak>[[customer.customer_name]]</span> -->
@@ -504,6 +521,43 @@ vsale=new Vue({
   },
 
   methods:{
+    customer_total_loan_order:function(customer){
+      return this.customer_total_order(customer)+this.total_customer_loan(customer)
+
+    },
+    total_customer_loan:function(customer){
+  
+      var amount=0;
+       var userid=this.itemuser
+     $.each(this.sales, function(key, value) {
+           if((!value.sales_authorized && value.customer==customer.id ) || (value.sales_method_payment=='loan' && value.customer==customer.id )){
+            amount+=value.sales_balance
+             }
+         });
+     amount=Math.round(amount)
+     
+     return amount;
+
+
+    },
+        customer_has_loan:function(customer){
+
+      var count=0;
+      var loan=false
+     $.each(this.sales, function(key, value) {
+           if(value.sales_authorized && value.customer==customer.id && value.sales_method_payment=='loan' ){
+            count+=1
+
+             }
+             if(count>=1){
+              loan=true;
+              // this is how to brak in $.each() for jquery
+              return false;
+             }
+         });
+     return loan
+
+    },
     getFilteredSales:function(sales){
       var newsale;
       newsale = sales.filter(function(sale){
@@ -682,7 +736,6 @@ vsale=new Vue({
              }
          });
      
-     amount = 'Tsh' + amount.toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
      return amount;
 
 
@@ -690,10 +743,10 @@ vsale=new Vue({
   	checkform:function(e){
  //  		csrftoken = Cookies.get('csrftoken');
 	// headers = {HTTP_X_CSRFTOKEN: csrftoken};
-    console.log('employee limit')
-    console.log(this.employee_sale_limit)
-    console.log(this.salesquantity)
-    console.log(this.quantityleft)
+    // console.log('employee limit')
+    // console.log(this.employee_sale_limit)
+    // console.log(this.salesquantity)
+    // console.log(this.quantityleft)
     var limit_emp=parseInt(this.employee_sale_limit)
     var sale_quant=parseInt(this.salesquantity)
     var left_item=parseInt(this.quantityleft)

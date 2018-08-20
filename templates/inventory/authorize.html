@@ -108,15 +108,18 @@ div.container {
 
 <div v-for="customer in customers" v-if="customer_has_order_auth(customer)">
 <div class="row">
-<h3 v-cloak  class="col-6">  [[customer_total_order_auth(customer)]]</h3>
-<h3 v-cloak  class="col-6">  [[customer.customer_name]]</h3>
+<h3 v-cloak  class="col-4" v-if="customer_has_loan(customer)">  [[customer_total_order_auth(customer)]]</h3>
+<h3 v-cloak  class="col-6" v-else>  [[customer_total_order_auth(customer)]]</h3>
+<h3 v-cloak  class="col-4" v-if="customer_has_loan(customer)">  [[customer.customer_name]]</h3>
+<h3 v-cloak  class="col-6" v-else>  [[customer.customer_name]]</h3>
+<h3 v-cloak  class="col-4 text-primary" v-if="customer_has_loan(customer)">  [[customer_total_loan_paid_order_auth(customer)]]</h3>
 <button class="btn btn-outline-primary btn-sm" v-on:click="authorize_customer_order(customer.id)" style="margin-right: 20px">Authorize Order</button>
 	 
-	 <a  href="#" v-on:click="prepOrderPdf(customer.id)">
-        
+	 <a  href="#" v-on:click="prepOrderPdf(customer.id)" style="margin-right: 20px">        
       <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
-
       </a>
+
+      <i tyep="button" class="fa fa-check" style="font-size:24;color:green; margin-right: 0px;" v-on:click="prepcustomersalemethodupdate(customer.id)" v-cloak data-toggle="modal" data-target="#exampleModal" v-if="customer_has_loan(customer)"></i>
 </div>
 	
 		<table class="table css-serial" >
@@ -147,8 +150,8 @@ div.container {
  --><!--       <td v-cloak>  Issuer</td>
  -->      <td v-if="item.id == sale.item" v-for ="item in items" v-cloak>[[item.item_name]]</td>
       <td v-cloak>[[sale.sales_quantity]]</td>
-      <td v-cloak v-if="sale.sales_method_payment=='loan'">[[sale.sales_balance]]</td>
-      <td v-cloak v-else>[[sale.sales_amount]]</td>
+      <!-- <td v-cloak v-if="sale.sales_method_payment=='loan'">[[sale.sales_balance]]</td> -->
+      <td v-cloak >[[sale.sales_amount]]</td>
 	  <td v-cloak v-if="sale.sales_received && !sale.sales_authorized"> <button class="btn btn-small btn-outline-dark" v-on:click="authorizeSale(sale.id)">Authorize</button></td>
 	  <td v-cloak v-if="!sale.sales_received && !sale.sales_authorized"> Pending ....</td>
 	  <td v-cloak v-if="sale.sales_method_payment=='loan' && sale.sales_authorized"> Authorized Loan</td>
@@ -159,7 +162,7 @@ div.container {
 	              <span aria-hidden="true">&times;</span>
 				  </button>
 
-		<i tyep="button" class="fa fa-check" style="font-size:24;color:green; margin-right: 0px;" v-on:click="prepsalemethodupdate(sale.id)" v-cloak data-toggle="modal" data-target="#exampleModal" v-if="sale.sales_method_payment=='loan' && sale.sales_authorized"></i>
+	<!-- 	<i tyep="button" class="fa fa-check" style="font-size:24;color:green; margin-right: 0px;" v-on:click="prepsalemethodupdate(sale.id)" v-cloak data-toggle="modal" data-target="#exampleModal" v-if="sale.sales_method_payment=='loan' && sale.sales_authorized"></i> -->
       </td>
     </tr>
 
@@ -243,7 +246,7 @@ new Vue({
   		customers:'',
   		employees:'',
   		users:'',
-  		loanpaid:0,
+  		loanpaid:'',
   	},
   	methods:{
   	prepOrderPdf:function(customerid){
@@ -281,17 +284,19 @@ new Vue({
     },
     runupdatesale:function(){
       if(this.singlesale){this.updateSalePaymentMethod(this.payment_method)
+      	this.loanpaid=''
         console.log('updatesale')
       }
       else {this.updateCustomerSalePaymentMethod(this.payment_method)
+      	this.loanpaid=''
         console.log('updatecustomer')
       }
       
     },
-    updateSalePaymentMethod:function(cash){
+    updateSalePaymentMethod:function(payment_method){
       saleid=this.sale_method_id
       loan=this.loanpaid
-     this.$http.post('/paymentmethodauth/'+saleid+'/'+cash+'/'+loan+'/',{})
+     this.$http.post('/paymentmethodauth/'+saleid+'/'+payment_method+'/'+loan+'/',{})
        .then(function(response){
         // this.items=response.data
       this.title=response.data
@@ -306,9 +311,10 @@ new Vue({
        })
 
     },
-    updateCustomerSalePaymentMethod:function(cash){
+    updateCustomerSalePaymentMethod:function(payment_method){
       customerid=this.customer_method_id
-     this.$http.post('/customerpayment/'+customerid+'/'+cash+'/',{})
+      loan=this.loanpaid
+     this.$http.post('/customerpaymentmethodauth/'+customerid+'/'+payment_method+'/'+loan+'/',{})
        .then(function(response){
         // this.items=response.data
       this.title=response.data
@@ -381,6 +387,42 @@ new Vue({
 		
 		return amount;
   	},
+  	customer_has_loan:function(customer){
+
+      var count=0;
+      var loan=false
+     $.each(this.sales, function(key, value) {
+           if(value.sales_authorized && value.customer==customer.id && value.sales_method_payment=='loan' ){
+            count+=1
+
+             }
+             if(count>=1){
+             	loan=true;
+             	// this is how to brak in $.each() for jquery
+             	return false;
+             }
+         });
+     return loan
+
+  	},
+  	customer_total_loan_paid_order_auth:function(customer){
+  
+      var amount=0;
+       var userid=this.itemuser
+     $.each(this.sales, function(key, value) {
+           if((!value.sales_authorized && value.customer==customer.id ) || (value.sales_method_payment=='loan' && value.customer==customer.id )){
+            amount+=value.sales_balance
+             }
+         });
+     amount=Math.round(amount)
+
+      amount = 'Tsh' + amount.toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")+'  ';
+
+     
+     return amount;
+
+
+    },
   	customer_total_order_auth:function(customer){
   
       var amount=0;
