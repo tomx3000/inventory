@@ -250,16 +250,23 @@ body {
 	overflow-y: auto;
 	overflow-x: auto;">
   <!-- received orders -->
+  <div v-for="customer in customers" style="margin-bottom: 20px;" v-if="customer_order_received(customer)">
+  <div class="row">
+  <h3 v-cloak  class="col-6">  [[customer.customer_name]]</h3>
+<h4 class="col-6 text-primary" v-cloak v-if="customer_has_loan(customer)" >  [[number_to_cash(customer_total_loan_order(customer))]]</h4> 
+<h4 class="col-6" v-cloak v-else>  [[number_to_cash(customer_order_received_total(customer))]]</h4>
 
-	<table class="table css-serial" >
+  </div>
+      <table class="table css-serial" >
   <thead>
     <tr>
       <th scope="col">#</th>
       <th scope="col">Date</th>
-      <th scope="col">Customer Name</th>
+   <!--    <th scope="col">Customer Name</th>   
       <th scope="col">Transportation</th>
-      <th scope="col">Destination</th>
-      <th scope="col">Product Name</th>
+       <th scope="col">Destination</th>
+       -->
+ <th scope="col">Product Name</th>
       <th scope="col">Quantity</th>
       <th scope="col">Cost</th>
       <th scope="col">Paid</th>
@@ -268,14 +275,13 @@ body {
   </thead>
   <tbody>
   {%with count=0%}
-    <tr v-for="(sale,index) in sales" v-if="(sale.sales_received && !sale.sales_authorized && sale.user==itemuser) || (sale.sales_method_payment=='loan' && sale.user==itemuser) " v-cloak onclick="">
+    <tr v-for="(sale,index) in sales" v-if="(sale.sales_received && !sale.sales_authorized && sale.user==itemuser && sale.customer==customer.id) || (sale.sales_method_payment=='loan' && sale.user==itemuser && sale.customer==customer.id) " v-cloak onclick="">
       <td scope="row" v-cloak></td>
       <td v-cloak> [[parseDate(sale.created_at)]] </td>
-
-      <td v-for="customer in customers" v-if="customer.id == sale.customer" v-cloak>[[customer.customer_name]]</td>
-      <td v-for="customer in customers" v-if="customer.id == sale.customer" v-cloak>[[customer.customer_transport]]</td>
-      <td v-for="customer in customers" v-if="customer.id == sale.customer" v-cloak>[[customer.customer_location]]</td>
-
+<!--       <td  v-cloak>[[customer.customer_name]]</td>
+      <td  v-cloak>[[customer.customer_transport]]</td>
+      <td v-cloak>[[customer.customer_location]]</td>
+ -->
       <td v-if="item.id == sale.item" v-for ="item in items" v-cloak>[[item.item_name]]</td>
       <td v-cloak>[[sale.sales_quantity]]</td>
       <td v-cloak>[[sale.sales_amount]]</td>
@@ -284,11 +290,14 @@ body {
     {%endwith%}
   </tbody>
 </table>
+  </div>
 
 
 
 		<!-- end received orders -->
 </div>
+
+
 <!-- <ul class="list-group">
   <li class="list-group-item d-flex justify-content-between lh-condensed">
       <div>
@@ -713,6 +722,33 @@ vsale=new Vue({
 		 	this.title='error getting items'
 		 })
   	},
+    customer_order_received_total:function(customer){
+  
+      amount=0;
+      var userid=this.itemuser
+     $.each(this.sales, function(key, value) {
+           if((value.sales_received && value.customer==customer.id && value.user==userid && !value.sales_authorized) || (value.sales_method_payment=='loan' && value.customer==customer.id && value.user==userid )){
+              amount+=value.sales_amount;
+             }
+         });
+     
+     return amount;
+
+    },
+    customer_order_received:function(customer){
+  
+      found=false;
+      var userid=this.itemuser
+     $.each(this.sales, function(key, value) {
+           if((value.sales_received && value.customer==customer.id && value.user==userid && !value.sales_authorized) || (value.sales_method_payment=='loan' && value.customer==customer.id && value.user==userid )){
+
+              found=true;
+             }
+         });
+     
+     return found;
+
+    },
     customer_has_order:function(customer){
   
       found=false;
@@ -726,6 +762,7 @@ vsale=new Vue({
      return found;
 
     },
+
     customer_total_order:function(customer){
   
       var amount=0;
