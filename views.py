@@ -82,14 +82,58 @@ def getGraphBata(request, *args, **kwargs):
 	print("Sales sartuday:{}".format(sartuday_sales))
 	print('Date sunday:{}'.format(sunday))
 	print("Sales sunday:{}".format(sunday_sales))
+	
+	data_to_display=arrrange_days_forgraph(days=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Sartuday","Sunday"],data=[monday_sales,tuesday_sales,wednesday_sales,thursday_sales,friday_sales,sartuday_sales,sunday_sales])
 
 	data = {
-	  'data': [sunday_sales,monday_sales,tuesday_sales,wednesday_sales,thursday_sales,friday_sales,sartuday_sales],
-	 'label': ["Sunday","Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Sartuday"],
+	  'data': data_to_display["values"],
+
+	 'label':data_to_display["days"],
 	 'order_id': 1233434,
 	}
-
+	
 	return JsonResponse(data)
+
+
+def arrrange_days_forgraph(data=None,days=None):
+	days_value=[]
+	arranged_days=[]
+	
+	days_position=[]	
+	# getting sequence of the previous days
+	for index in range(7):
+		days_position.append((datetime.date.today()-timedelta(days=index)).isocalendar()[2])
+
+	print("position of says in sequence")
+	print(days_position)	
+
+	# arranging the days in appropriate sequence
+	for position in days_position:
+		print(position)
+		arranged_days.append(days[position-1])
+
+	print("new arranged days")
+	print(list(reversed(arranged_days)))
+
+	# the values in appropiate sequence
+	for position in days_position:
+		print(position)
+		if data[position-1] is None:
+			data[position-1]=0
+			print(0)
+		days_value.append(data[position-1])
+
+	print("new arranged data")
+	print(list(reversed(days_value)))
+
+	# define a function that goes down to zero from today's iso value
+
+	# define a function that goes down to todays iso value from the maximum value
+
+	# oneach funciton append the values to the approrpiacte list for return to the frontend graph for drawing 
+
+	return {"days":list(reversed(arranged_days)),"values":list(reversed(days_value))}
+	
 
 
 @csrf_exempt

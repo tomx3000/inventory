@@ -4,6 +4,9 @@
 
 {%block style%}
 <style type="text/css">
+.go3d{  min-width:100px; 
+  box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.2);
+  padding: 10px;}
 	/*for numbering tables*/
 .css-serial {
   counter-reset: serial-number;  /* Set the serial number counter to 0 */
@@ -21,15 +24,18 @@
    <div id="searchoderstock">
     
     <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow row ">
-      <a class="navbar-brand col-3 col-sm-3 col-md-2 col-lg-2  mr-0 " href="#">{{user.username}}
+      <a class="navbar-brand col-3 col-sm-3 col-md-2 col-lg-2  mr-0 " href="#"><i class="fa fa-user-circle"></i> {{user.username}}
       </a>
-      <input class="form-control form-control-dark col-6 col-sm-6 col-md-8 col-lg-8 w-100" type="text" placeholder="Search" aria-label="Search" v-model="searchfiledoderstock" v-on:keyup.enter="getOrderStock">
+      <input class="form-control form-control col-6 col-sm-6 col-md-8 col-lg-8 w-100" type="text" placeholder="Search" aria-label="Search" v-model="searchfiledoderstock" v-on:keyup.enter="getOrderStock">
       <!-- <button class='btn btn-outline-secondary my-2 my-sm-0 col-2 col-sm-2 col-md-1 col-lg-1' v-cloak v-on:click.prevent="getOrderStock()">search</button> -->
+   
       <ul class="navbar-nav px-3 col-3 col-sm-3 col-md-2 col-lg-2">
         <li class="nav-item text-nowrap ">
-          <a class="nav-link" href="/login/">Sign out</a>
+          <a class="nav-link"  v-cloak v-on:click.prevent="getOrderStock()">      <i class="fa fa-search" aria-hidden="true"></i>
+</a>
         </li>
       </ul>
+
     </nav>
 
   </div>
@@ -37,12 +43,18 @@
 
 {%block content%}
 <div id="inventory">
+<div class="box-loading" style="z-index: 1; position: fixed;left: 70%;" v-if="loading">
+    <div class="display-loading open"></div>
+    <div>Loading...</div>
+</div>
 	<h1 v-cloak>[[inventory]]</h1>
 	<div class="row">
 		<div class="col-lg-8 col-mid-8 col-sm-12 col-12 container" style=" max-width: 700px;
 	overflow-y: auto;
 	overflow-x: auto;">
-		<div v-for="customer in customers" v-if="customer_has_order_auth_issued(customer)">
+		<div v-for="customer in customers" v-if="customer_has_order_auth_issued(customer)" class="go3d" style=" max-width: 100%;
+	overflow-y: auto;
+	overflow-x: auto; margin-bottom: 20px;">
 		<div class="row">
 <button class="btn  btn-outline-primary btn-small col-3 "  value="Issue Order" v-on:click="issue_customer_order(customer.id)">Issue Order</button>
 <h3 v-cloak class="col-3 offset-6">  [[customer.customer_name]]</h3>
@@ -113,14 +125,14 @@
   </li>
 
 </ul> 
-<div style="max-height: 500px;
+<div style="max-height: 1000px;
   overflow-y: auto;
   overflow-x: auto;">
 
    <ul class="list-group">
 
 
-      <li v-bind:class="{'list-group-item':true,'d-flex':true,'justify-content-between':true,'lh-condensed':true,'bg-info':(item.item_size<=item.item_minimum_allowed_quantity)}" style="margin-top:10px" v-for="item in items"  v-cloak>
+      <li v-bind:class="{'list-group-item':true,'d-flex':true,'justify-content-between':true,'lh-condensed':true,'bg-info':(item.item_size<=item.item_minimum_allowed_quantity),'go3d':true}" style="margin-top:10px" v-for="item in items"  v-cloak>
 
               <div> 
           <h6  class="my-0" v-cloak> [[item.item_name]] </h6>
@@ -229,6 +241,7 @@ new Vue({
   		employees:'',
   		users:'',
   		itemssales:'',
+  		loading:false,
   	},
   	methods:{
   		  	getSales:function(){
@@ -327,6 +340,7 @@ new Vue({
      return found;
 
   	},issue_customer_order:function(customerid){
+  		this.loading=true
   			this.$http.post('/issuecustomerorder/'+customerid+'/',{'id':customerid})
   		 .then(function(response){
   		 	// this.items=response.data
@@ -337,6 +351,7 @@ new Vue({
 	  		this.getEmployees()
 			this.getCustomers()
   		 	// alert('response')
+  		 	this.loading=false
   		 })
   		 .catch(function(error){
   		 	this.title='error getting items'

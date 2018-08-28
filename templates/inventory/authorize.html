@@ -33,6 +33,11 @@ div.container {
   content: counter(serial-number);  /* Display the counter */
 }
 
+.go3d{   
+  box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.2);
+  padding: 10px;}
+
+
 </style>
 {%endblock%}
 {%block inputsearch%}
@@ -40,15 +45,18 @@ div.container {
    <div id="searchorderauthorize">
     
     <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow row ">
-      <a class="navbar-brand col-3 col-sm-3 col-md-2 col-lg-2  mr-0 " href="#">{{user.username}}
+      <a class="navbar-brand col-3 col-sm-3 col-md-2 col-lg-2  mr-0 " href="#"><i class="fa fa-user-circle"></i> {{user.username}}
       </a>
-      <input class="form-control form-control-dark col-6 col-sm-6 col-md-8 col-lg-8 w-100" type="text" placeholder="Search" aria-label="Search" v-model="searchfiledsaleauthorize" v-on:keyup.enter="getOrderauthorize">
+      <input class="form-control form-control col-6 col-sm-6 col-md-8 col-lg-8 w-100" type="text" placeholder="Search" aria-label="Search" v-model="searchfiledsaleauthorize" v-on:keyup.enter="getOrderauthorize">
       <!-- <button class='btn btn-outline-secondary my-2 my-sm-0 col-2 col-sm-2 col-md-1 col-lg-1' v-cloak v-on:click.prevent="getOrderauthorize()">search</button> -->
+     
       <ul class="navbar-nav px-3 col-3 col-sm-3 col-md-2 col-lg-2">
         <li class="nav-item text-nowrap ">
-          <a class="nav-link" href="/login/">Sign out</a>
+          <a class="nav-link"  v-cloak v-on:click.prevent="getOrderauthorize()">      <i class="fa fa-search" aria-hidden="true"></i>
+</a>
         </li>
       </ul>
+
     </nav>
 
   </div>
@@ -57,7 +65,10 @@ div.container {
 
 {%block content%}
 <div id="authorize">
-
+<div class="box-loading" style="z-index: 1; position: fixed;left: 70%;" v-if="loading">
+    <div class="display-loading open"></div>
+    <div>Loading...</div>
+</div>
 <!-- Modal -->
 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-sm" role="document">
@@ -106,13 +117,17 @@ div.container {
 
 <!-- end demo $$$$$$$$$$$$$$$$$$$$$$$$$$$$ -->
 
-<div v-for="customer in customers" v-if="customer_has_order_auth(customer)">
-<div class="row">
+<div v-for="customer in customers" v-if="customer_has_order_auth(customer)" class="container go3d"  style=" 
+	overflow-y: auto;
+	overflow-x: auto; margin-bottom: 20px;">
+<div class="row" style="min-width: 500px;">
 <h3 v-cloak  class="col-4" v-if="customer_has_loan(customer)">  [[customer_total_order_auth(customer)]]</h3>
 <h3 v-cloak  class="col-6" v-else>  [[customer_total_order_auth(customer)]]</h3>
 <h3 v-cloak  class="col-4" v-if="customer_has_loan(customer)">  [[customer.customer_name]]</h3>
 <h3 v-cloak  class="col-6" v-else>  [[customer.customer_name]]</h3>
 <h3 v-cloak  class="col-4 text-primary" v-if="customer_has_loan(customer)">  [[customer_total_loan_paid_order_auth(customer)]]</h3>
+</div>
+<div class="row">
 <button class="btn btn-outline-primary btn-sm" v-on:click="authorize_customer_order(customer.id)" style="margin-right: 20px">Authorize Order</button>
 	 
 	 <a  href="#" v-on:click="prepOrderPdf(customer.id)" style="margin-right: 20px">        
@@ -247,6 +262,7 @@ new Vue({
   		employees:'',
   		users:'',
   		loanpaid:'',
+  		loading:false,
   	},
   	methods:{
   	prepOrderPdf:function(customerid){
@@ -294,6 +310,7 @@ new Vue({
       
     },
     updateSalePaymentMethod:function(payment_method){
+      this.loading=true
       saleid=this.sale_method_id
       loan=this.loanpaid
      this.$http.post('/paymentmethodauth/'+saleid+'/'+payment_method+'/'+loan+'/',{})
@@ -304,7 +321,7 @@ new Vue({
 
       this.getSales()
       
-    
+     this.loading=false
        })
        .catch(function(error){
         this.title='error getting items'
@@ -312,6 +329,7 @@ new Vue({
 
     },
     updateCustomerSalePaymentMethod:function(payment_method){
+    	this.loading=true
       customerid=this.customer_method_id
       loan=this.loanpaid
      this.$http.post('/customerpaymentmethodauth/'+customerid+'/'+payment_method+'/'+loan+'/',{})
@@ -321,6 +339,7 @@ new Vue({
       // this.acceptCustomerOrder(customerid)
       
       this.getSales()
+      this.loading=false
     
        })
        .catch(function(error){
@@ -363,6 +382,7 @@ new Vue({
 
     },
   	deleteSale:function(id,itemid,quantity){
+  		this.loading=true
   		 this.$http.delete('/api/sale/'+id+'/')
   		 .then(function(response){
   		 	// this.items=response.data
@@ -370,6 +390,7 @@ new Vue({
   		 	this.updateItemsOnDeleteSales(itemid,quantity)
   		 	this.getSales()
   		 	// alert('response')
+  		 	this.loading=false
   		 })
   		 .catch(function(error){
   		 	this.title='error getting items'
@@ -501,6 +522,7 @@ new Vue({
 		 })
   	},
   	authorize_customer_order:function(customerid){
+  		this.loading=true
   		this.$http.post('/authorizecustomerorder/'+customerid+'/',{'id':customerid})
   		 .then(function(response){
   		 	// this.items=response.data
@@ -511,12 +533,14 @@ new Vue({
 	  		this.getEmployees()
 			this.getCustomers()
   		 	// alert('response')
+  		 	this.loading=false
   		 })
   		 .catch(function(error){
   		 	this.title='error getting items'
   		 })
   	},
   		authorizeSale:function(id){
+  			this.loading=true
   		this.$http.post('/authorizesale/'+id+'/',{'id':id})
   		 .then(function(response){
   		 	// this.items=response.data
@@ -527,6 +551,7 @@ new Vue({
 	  		this.getEmployees()
 			this.getCustomers()
   		 	// alert('response')
+  		 	this.loading=false
   		 })
   		 .catch(function(error){
   		 	this.title='error getting items'
