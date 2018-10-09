@@ -31,9 +31,57 @@ from django.db.models import Avg,Sum
 from datetime import timedelta
 from django.utils import timezone
 
+def delete_recovery(object):
+	pass
+
+def soft_delete(object):
+	pass
+
+def check_correct_uniqueness():
+	# list for holding the customers' names while going throught them in the database
+	tempcustomer=[]
+
+	# using raw query so as to by bass the deliberate limitation that were overidden in the model class of not getting all the rows within an entitty 
+
+	# getting all customers, deleted(dead) and not deleted( alive)
+	customers = Customer.objects.raw('select * from inventory_customer where deleted_at is not null or deleted_at is null')
+
+	# going through the customers
+	for index,customer in enumerate(customers):
+		print("Customer: "+str(index))
+		# check if the list contains a customer name
+		if tempcustomer.__contains__(customer.customer_name):
+			# if yes
+			# modify the customer name and store it temporarly
+			new_customer_name=customer.customer_name+str(tempcustomer.count(customer.customer_name))
+
+			count=0
+
+			# check if the newly modifed customer is in the list also
+			while(tempcustomer.__contains__(new_customer_name)):
+				# if yes modify the new customer name till its is not found in the list
+				new_customer_name=new_customer_name+str(count)
+				count+=1
+
+			# now add the new customer name to the customer list
+			tempcustomer.append(new_customer_name)
+			# modify the customer name in the database to the new customer name
+			customer.customer_name=new_customer_name
+			# save the customer 
+			customer.save()
+			
+		else:
+			# if customer name not in list 
+			# add it to the customer list
+			tempcustomer.append(customer.customer_name)
+
+	print('done')
+
+
 @csrf_exempt
 @login_required(login_url='/login/')
 def getGraphBata(request, *args, **kwargs):
+	check_correct_uniqueness()
 	print('graph')
 	days_dict={1:'Monday',2:'Tuesday',3:'Wednesday',4:'Thursday',5:'Friday',6:'Sartuday',7:'Sunday'}
 
@@ -426,6 +474,26 @@ def AcceptSale(request,*args,**kargs):
 # remeber the best way to implemet a sale order and handling loans is by implementing a whole new order table linked to the sales table 
 # due to the sake of time and inconvinience a hack around is implemented by navingating some boolean fields in the sales table and paymet_methods column and balaance column is added for this exact purpose
 # in future a much more simpler implementation should eliminate this processing bottleneck
+
+@csrf_exempt
+@login_required(login_url='/login/')
+def restoreCustomerCredit(request,*args,**kargs):
+	customer=Customer.objects.get(id=kargs['customerid'])
+	sale=Sales.objects.get(id=kargs['saleid'])
+
+	# if customer has a crdit balance 
+	#  you can restore the amount 
+	if (sale.sales_piad_with_customer_credit):
+		print("credit restore amount")
+		print(round(float(kargs['amount'])))
+		customer.customer_debit_amount+=round(float(kargs['amount']))
+		customer.save()
+
+
+	return HttpResponse('ok')
+
+
+
 @csrf_exempt
 @login_required(login_url='/login/')
 def UpdateCustomerSalesPaymentMethodAuth(request,*args,**kargs):
@@ -442,11 +510,21 @@ def UpdateCustomerSalesPaymentMethodAuth(request,*args,**kargs):
 
 	def isCreditFree(amountpaid,totalbalance):
 		free =False
-		if amountpaid >= round(totalbalance):free=True
-		return free
+		extra_cash_paid=0
+		if amountpaid >= round(totalbalance):
+			free=True
+			extra_cash_paid=amountpaid-round(totalbalance)
+		return [free,extra_cash_paid]
 
-	if isCreditFree(float(kargs['amount']),customer_order_loan_balance):
+	if isCreditFree(float(kargs['amount']),customer_order_loan_balance)[0]:
 		updatedsales=customer_loan_order.update(sales_method_payment=kargs['cash'],sales_balance=F('sales_amount'))
+
+		# record that customer has paid extra
+
+		# adding current extra customer amount to the new extra 
+		customer.customer_debit_amount+=isCreditFree(float(kargs['amount']),customer_order_loan_balance)[1]
+		customer.save()
+
 		print('no more loan')
 	else:
 		current_balance=round(customer_order_loan_balance)-float(kargs['amount'])
@@ -505,7 +583,53 @@ def UpdateCustomerSalesPaymentMethod(request,*args,**kargs):
 	amount=0
 	print('multiplesss...')
 	print(kargs['cash'])
-	updatesale=Sales.objects.filter(customer=customer,sales_received=False).update(sales_method_payment=kargs['cash'],sales_balance=F('sales_amount'))
+
+	# begin handling of customer credit balance
+
+	if customer.customer_debit_amount>0:
+		# custoemr has credit balance
+
+		# getting total sales for a customer's order
+		customer_total_order=Sales.objects.filter(customer=customer,sales_received=False).aggregate(Sum('sales_amount'))['sales_amount__sum']
+
+		# deducting the credit balance from amount paid for the order
+
+		customer_total_order-=customer.customer_debit_amount
+
+		# getting total number of items within the customer order
+		number_of_items_in_order=Sales.objects.filter(customer=customer,sales_received=False).count()
+
+		if customer_total_order <0:
+			# customer still has credit balance
+			customer.customer_debit_amount=(-1)*customer_total_order
+			# reseting the customer total order
+			customer_total_order=0
+
+			# update each individual sales balance to zero
+			updatesale=Sales.objects.filter(customer=customer,sales_received=False).update(sales_method_payment=kargs['cash'],sales_balance=0,sales_piad_with_customer_credit=True)
+			print("customer credit remains: ",customer_total_order*-1)
+
+		else:
+			# customer no longer has credit balance
+			customer.customer_debit_amount=0
+
+			# to store the order amount modified by the credit balance, we split the resultant amount into individual units and stroe each unit balance into respective sale within the customers order
+			
+			balance_per_item=round(customer_total_order/number_of_items_in_order)
+
+			# update the customer sales order with this neer balnce  on each item within the order
+
+			updatesale=Sales.objects.filter(customer=customer,sales_received=False).update(sales_method_payment=kargs['cash'],sales_balance=balance_per_item,sales_piad_with_customer_credit=True)
+
+			print("balance per item ", balance_per_item)
+
+		customer.save()
+
+	else:
+		updatesale=Sales.objects.filter(customer=customer,sales_received=False).update(sales_method_payment=kargs['cash'],sales_balance=F('sales_amount'))
+
+		
+	# end handling of credit balance
 	
 	return HttpResponse('ok')
 
@@ -791,5 +915,7 @@ def ViewAuthorize(request,*args,**kargs):
 	# 		sale.update(sales_received=True)
 	# else:
 	# 	sales.update(sales_received=True)
+
+
 
 

@@ -5,10 +5,12 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <style type="text/css">
+
     :root {
   --input-padding-x: .75rem;
   --input-padding-y: .75rem;
 }
+
 html,
 body {
   height: 100%;
@@ -77,7 +79,8 @@ body {
 
 .go3d{   
   box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.2);
-  padding: 10px;}
+  padding: 10px;
+border-radius: 10px;}
 
 </style>
 
@@ -158,11 +161,15 @@ body {
    <li class="list-group-item d-flex justify-content-between lh-condensed">
         <div>
         <h4  class="my-0" >  Name </h4>
-        <small class="text-muted"> Phone </small>
+        <small class="text-muted" v-if="!show_customer_debit_amount"> Phone </small>
       </div>
       <div>
-      <h4 class="my-0"> Location </h4>
-      <small class="text-muted"> Transportation </small>
+        <button class="btn btn-outline-primary fa fa-user" v-on:click="showCustomeDebitAmount"> </button>
+      </div>
+      <div>
+      <h4 class="my-0" v-if="!show_customer_debit_amount"> Location </h4>
+      <h4 class="my-0" v-if="show_customer_debit_amount"> Credit Balance </h4>
+      <small class="text-muted" v-if="!show_customer_debit_amount"> Transportation </small>
         
       </div>
       
@@ -170,11 +177,25 @@ body {
   </li>
 
 </ul> 
-<div style="max-height: 500px;
+<div style="max-height: 700px;
   overflow-y: auto;
   overflow-x: auto;">
+  <!-- customer with debit amount in business. i.e amount to be paid by the business to the customer in form of good or services ipon customer purchase of the next order -->
 
-   <ul class="list-group">
+  <ul class="list-group" v-if="show_customer_debit_amount" style="margin-top: 20px;">
+    <li class="list-group-item d-flex justify-content-between lh-condensed go3d" v-for="customer in getFilteredCutomers(customers)">
+          <div class="container">
+                  <h6  class="my-0" v-cloak>[[customer.customer_name]]  </h6>
+                </div>
+                <div class="container">
+                <span v-cloak class="text-muted"> [[
+                number_to_cash(customer.customer_debit_amount)]]  </span>  
+                </div>
+    </li>
+
+  </ul>
+
+   <ul class="list-group" v-if="!show_customer_debit_amount">
 
 
       <li class="list-group-item d-flex justify-content-between lh-condensed go3d" style="margin-top:10px" v-for="customer  in customers" v-on:dblclick="editCustomer(customer.company,customer.id,customer.customer_name,customer.customer_phone,customer.customer_transport,customer.customer_location)" v-cloak>
@@ -256,8 +277,25 @@ wm = new Vue({
   	file:'',
   	required:true,
     loading:false,
+    show_customer_debit_amount:false,
   },
   methods:{
+     number_to_cash:function(number,currency='Tsh'){
+      return currency+" " + number.toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+     
+     
+    },
+    getFilteredCutomers:function(customers){
+      var newcustomer;
+      newcustomer = customers.filter(function(customer){
+        return (customer.customer_debit_amount>0)
+      })
+      return newcustomer;
+    },
+    showCustomeDebitAmount:function(){
+      this.show_customer_debit_amount=~this.show_customer_debit_amount
+      console.log("ouch!");
+    },
   	
   	checkSubmitCustomerForm:function(e){  
   
@@ -338,6 +376,11 @@ wm = new Vue({
        })
        .catch(function(error){
         this.title='error getting items'
+        console.error('error uploading customer')
+        $.notify('Error uploading customer',{ autoHideDelay: 10000,className:'error'});
+        this.loading=false
+        $.notify('Most likely Customer Already Exists',{ autoHideDelay: 15000,className:'info'});
+        $.notify('Try adding an index to customer name',{ autoHideDelay: 30000,className:'info'});
        })
   		}
       }         

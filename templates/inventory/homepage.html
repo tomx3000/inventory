@@ -106,7 +106,9 @@ body {
 
 .go3d{   
   box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.2);
-  padding: 10px;}
+  padding: 10px;
+  border-radius: 10px;
+}
 
 </style>
 
@@ -214,7 +216,7 @@ body {
 	  </select>
 	</div>
 
-<!--   <div class=" mb-3" >
+  <!-- <div class=" mb-3" >
  
   <v-select label="customer_name" :options="customersselect"   v-model="salecustomer"   placeholder="Customer"></v-select>
 
@@ -230,6 +232,7 @@ body {
 	  </select>
 	</div> -->
 <!-- sample select picker -->
+
 <div class=" mb-3">
  
   <v-select label="item_name" :options="itemsselect"   v-model="selected" v-on:input="setPrice(selected)"  placeholder="Product"></v-select>
@@ -325,7 +328,7 @@ body {
 </div>
 
 <!-- begin order -->
-<div class='col-lg-4 col-md-4 col-sm-12 col-12' style="margin-top: 20px; max-height: 800px;
+<div class='col-lg-4 col-md-4 col-sm-12 col-12' style="margin-top: 20px; max-height: 100vh;
   overflow-y: auto;
   overflow-x: auto;">
 
@@ -350,6 +353,8 @@ body {
         
       </div>
   </li>
+
+
 <!-- loan -->
 <li class="list-group-item d-flex justify-content-between lh-condensed" v-if="customer_has_loan(customer)">
       <div class="container">
@@ -365,6 +370,22 @@ body {
       </div>
   </li>
 <!-- end loan -->
+
+<!-- begin customer credit -->
+<li class="list-group-item d-flex justify-content-between lh-condensed" v-if="customer_has_credit(customer)">
+      <div class="container">
+   
+        <h4  class="" v-cloak>Credit </h4>
+        
+      </div>
+      <div class="container">
+
+      <h4 class="text-muted align-right" v-cloak>  [[number_to_cash(customer.customer_debit_amount)]]</h4>
+
+       
+      </div>
+  </li>
+<!-- end customer credit -->
 
 
 </ul> 
@@ -541,6 +562,15 @@ vsale=new Vue({
   },
 
   methods:{
+    customer_has_credit:function(customer){
+      var credit =false;
+      if (Math.round(customer.customer_debit_amount)>0) {
+        console.log("has credit")
+        credit=true; 
+      }
+
+      return credit;
+    },
     customer_total_loan_order:function(customer){
       return this.customer_total_order(customer)+this.total_customer_loan(customer)
 
@@ -787,9 +817,15 @@ vsale=new Vue({
             amount+=value.sales_amount
              }
          });
-     
-     return amount;
 
+    
+    // modify the amount to include the customer credit if present 
+     amount-=customer.customer_debit_amount
+     
+     // allowing negative amount
+     // they will symbolize the amount that the business holds for the customer ie customers current credit amount
+
+     return Math.round(amount);
 
     },
   	checkform:function(e){
@@ -927,7 +963,6 @@ vsale=new Vue({
         this.title='error getting items'
        })
 
-
     }
   	,acceptAllSales:function(){
   		this.$http.post('/saleaccept/')
@@ -941,7 +976,6 @@ vsale=new Vue({
   		 	this.title='error getting items'
   		 })
 
-
   	},
   	getTotalAcceptSales:function(sales){
   	var amount=0; 
@@ -953,7 +987,6 @@ vsale=new Vue({
 				     }
 				 });
     return this.number_to_cash(amount)
-
 
   	},
     number_to_cash:function(number,currency='Tsh'){

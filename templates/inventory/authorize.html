@@ -35,7 +35,23 @@ div.container {
 
 .go3d{   
   box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.2);
-  padding: 10px;}
+  padding: 10px;
+  border-radius: 10px;
+}
+
+
+.credit_display{
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  text-align: center;
+  background-color: #ffffff;
+  display: block;
+  position: absolute;
+  border-radius: 10px;
+  z-index: 1; 
+}
+
+
+
 
 
 </style>
@@ -120,11 +136,34 @@ div.container {
 <div v-for="customer in customers" v-if="customer_has_order_auth(customer)" class="container go3d"  style=" 
 	overflow-y: auto;
 	overflow-x: auto; margin-bottom: 20px;">
+  <div class="credit_display go3d" v-if="show_credit_for_customer(customer)" >
+      <h4 class="text-primary" v-cloak>[[customer.customer_name]]</h4>
+      <table class="table css-serial">
+      <tr>
+          <th>Current Credit</th>
+          <td v-cloak> [[getCustomerCreditInfo(customer).current_credit]]</td>
+        </tr>
+
+        <tr>
+          <th>Credit Used</th>
+          <td v-cloak>[[getCustomerCreditInfo(customer).credit]]</td>
+        </tr>
+  
+        <tr>
+          <th>Amount Paid</th>
+          <td v-cloak> [[getCustomerCreditInfo(customer).balance]]</td>
+        </tr>
+        <tr>
+          <th>Toatal Order</th>
+          <td v-cloak> [[getCustomerCreditInfo(customer).amount]]</td>
+        </tr>
+      </table>   
+  </div>
 <div class="row" style="min-width: 500px;">
 <h3 v-cloak  class="col-4" v-if="customer_has_loan(customer)">  [[customer_total_order_auth(customer)]]</h3>
 <h3 v-cloak  class="col-6" v-else>  [[customer_total_order_auth(customer)]]</h3>
-<h3 v-cloak  class="col-4" v-if="customer_has_loan(customer)">  [[customer.customer_name]]</h3>
-<h3 v-cloak  class="col-6" v-else>  [[customer.customer_name]]</h3>
+<h3 v-cloak  class="col-4" v-if="customer_has_loan(customer)" v-on:click="showCustomerCredit(customer)">  [[customer.customer_name]]</h3>
+<h3 v-cloak  class="col-6" v-on:click="showCustomerCredit(customer)" v-else>  [[customer.customer_name]]</h3>
 <h3 v-cloak  class="col-4 text-primary" v-if="customer_has_loan(customer)">  [[customer_total_loan_paid_order_auth(customer)]]</h3>
 </div>
 <div class="row">
@@ -172,7 +211,7 @@ div.container {
 	  <td v-cloak v-if="sale.sales_method_payment=='loan' && sale.sales_authorized"> Authorized Loan</td>
 	  <td v-cloak>[[sale.sales_method_payment]]</td>
       <td>
-      	<button type="button" class="close" aria-label="Close" v-on:click="deleteSale(sale.id,sale.item,sale.sales_quantity)">
+      	<button type="button" class="close" aria-label="Close" v-on:click="restoreCustomerCredit_thenDelete(sale.id,sale.item,sale.sales_quantity,customer.id,sale.sales_amount)">
 
 	              <span aria-hidden="true">&times;</span>
 				  </button>
@@ -263,8 +302,95 @@ new Vue({
   		users:'',
   		loanpaid:'',
   		loading:false,
+      show_credit_customer:"",
   	},
   	methods:{
+
+    getCustomerCreditInfo:function(customer){
+      let info=[];
+      var amount=0;
+      var balance=0;
+      var previous_credit=0;
+       var userid=this.itemuser
+       var temp_credit=customer.customer_debit_amount
+     $.each(this.sales, function(key, value) {
+           if((!value.sales_authorized && value.customer==customer.id ) || (value.sales_method_payment=='loan' && value.customer==customer.id )){
+            amount+=value.sales_amount
+            balance+=value.sales_balance
+             }
+         });
+
+     
+     if (balance == 0){
+      //  the custmomer doesnot pay a thing
+      //  amount to be paid is zero
+      // if(typeof temp_credit === 'undefined'){
+      //   // this is notdefin
+      //   previous_credit=0
+
+
+      // }else{
+
+      //  previous_credit=Math.round(amount+temp_credit)   
+
+      // }
+
+       previous_credit=Math.round(amount+temp_credit) 
+       console.log("gotcha")
+
+      amount = 'Tsh' + amount.toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")+'  ';  
+      previous_credit ='Tsh' + previous_credit.toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")+'  '; 
+
+      balance = 'Tsh' + balance.toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")+'  '; 
+
+       temp_credit = 'Tsh' + temp_credit.toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")+'  '; 
+      // the  customer doesnot pay a thing
+      // the customer has used his/her credit balance
+      // check if the credit balance is left
+
+      info={"amount":amount,"credit":amount,"balance":balance,"current_credit":temp_credit};
+
+     }
+     else if(balance == amount){
+
+      // customer pays the amuunt
+      amount = 'Tsh' + amount.toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")+'  ';
+
+      info={"amount":amount,"credit":"Tsh 0.00","balance":amount,"current_credit":"Tsh 0.00"};
+
+     }else{
+
+      // customer pays the balance
+
+      previous_credit= Math.round(amount-balance)
+      // find previous cedit balnce
+      // balance is the amount paid by the customer
+      amount = 'Tsh' + amount.toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")+'  ';
+
+      previous_credit ='Tsh' + previous_credit.toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")+'  '; 
+
+      balance = 'Tsh' + balance.toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")+'  '; 
+
+      info={"amount":amount,"credit":previous_credit,"balance":balance,"current_credit":"Tsh 0.00"};
+
+
+     }
+
+     return info;
+    },
+    showCustomerCredit:function(customer){
+      if(this.show_credit_customer==customer.id)this.show_credit_customer=""
+        else
+      this.show_credit_customer=customer.id
+    },
+
+    show_credit_for_customer:function(customer){
+      found=false
+      if (customer.id==this.show_credit_customer){
+        found=true;
+      }
+      return found;
+    },
   	prepOrderPdf:function(customerid){
       window.location.replace('/pdf/'+customerid+'/');
 
@@ -379,7 +505,21 @@ new Vue({
         this.title='error getting items'
        })
 
+    },
+    restoreCustomerCredit_thenDelete:function(saleid,itemid,quantity,customerid,amount_deleted){
 
+      this.$http.post('/customerrestorecredit/'+customerid+'/'+amount_deleted+'/'+saleid+'/',{'id':customerid})
+       .then(function(response){
+        // this.items=response.data
+        this.title=response.data
+        this.deleteSale(saleid,itemid,quantity);
+        console.log("success customer credit restore");
+       })
+       .catch(function(error){
+        this.title='error getting items'
+        console.error("error restoring customer credit")
+       })
+      
     },
   	deleteSale:function(id,itemid,quantity){
   		this.loading=true
@@ -444,23 +584,33 @@ new Vue({
 
 
     },
+
   	customer_total_order_auth:function(customer){
-  
+  // find a way to to show amount on credit payment
+  // and show the customers credit
+
+
       var amount=0;
+      var balance=0;
+      var previous_credit=0;
        var userid=this.itemuser
      $.each(this.sales, function(key, value) {
            if((!value.sales_authorized && value.customer==customer.id ) || (value.sales_method_payment=='loan' && value.customer==customer.id )){
             amount+=value.sales_amount
+            balance+=value.sales_balance
              }
          });
 
-      amount = 'Tsh' + amount.toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")+'  ';
+     
+
+     amount = 'Total' + amount.toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")+'  ';
 
      
+
      return amount;
 
-
     },
+
   	customer_has_order_auth:function(customer){
   
       found=false;
