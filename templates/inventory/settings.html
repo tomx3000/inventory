@@ -15,6 +15,8 @@
   padding: 10px;
 border-radius: 10px;}
 
+
+
 </style>
 {%endblock%}
 {%block inputsearch%}
@@ -114,7 +116,7 @@ border-radius: 10px;}
    <small class="text-muted">
     	  <ul class="list-group">
      
-   <li class="list-group-item d-flex justify-content-between lh-condensed" v-for="comp in company" v-cloak v-on:dblclick="editCompany(comp.id,comp.company_name,comp.company_address,comp.company_email,comp.company_phone)" style="overflow: auto;">
+   <li class="list-group-item d-flex justify-content-between lh-condensed go3d" v-for="comp in company" v-cloak v-on:dblclick="editCompany(comp.id,comp.company_name,comp.company_address,comp.company_email,comp.company_phone)" style="overflow: auto;">
         <div>
         <h4  class="my-0" v-cloak>  [[comp.company_name]] </h4>
         <small class="text-muted" v-cloak> [[comp.company_phone]] </small>
@@ -173,7 +175,7 @@ border-radius: 10px;}
     <small class="text-muted">
     	  <ul class="list-group">
      
-   <li class="list-group-item d-flex justify-content-between lh-condensed" v-cloak v-for="store in stores" v-on:dblclick="editStore
+   <li class="list-group-item d-flex justify-content-between lh-condensed go3d" v-cloak v-for="store in stores" v-on:dblclick="editStore
 (store.company,store.id,store.store_name,store.store_address,store.store_email,store.store_phone)" style="overflow: auto;">
         <div>
         <h4  class="my-0" v-cloak>  [[store.store_name]] </h4>
@@ -219,7 +221,7 @@ border-radius: 10px;}
     <small class="text-muted">
     	  <ul class="list-group">
      
-   <li class="list-group-item d-flex justify-content-between lh-condensed" v-cloak v-for="acc in account" v-on:dblclick="editAccount(acc.account_user,acc.account_company,acc.id,acc.account_name,acc.account_amount)" style="overflow: auto;">
+   <li class="list-group-item d-flex justify-content-between lh-condensed go3d" v-cloak v-for="acc in account" v-on:dblclick="editAccount(acc.account_user,acc.account_company,acc.id,acc.account_name,acc.account_amount)" style="overflow: auto;">
         <div>
         <h4  class="my-0" v-cloak >  [[acc.account_name]] </h4>
 <!--         <small class="text-muted" > Quantity </small>
@@ -280,7 +282,7 @@ border-radius: 10px;}
     <small class="text-muted container" >
     	  <ul class="list-group container">
      
-   <li class="list-group-item d-flex justify-content-between lh-condensed container" v-cloak v-for="employee in employees" v-on:dblclick="editEmployee(employee.id,employee.employee_firstname,employee.employee_privillage,employee.employee_position,employee.employee_sale_limit,employee.company,employee.user)" style="overflow: auto;" v-if="employee.employee_firstname!='devtom'">
+   <li class="list-group-item d-flex justify-content-between lh-condensed container go3d" v-cloak v-for="employee in employees" v-on:dblclick="editEmployee(employee.id,employee.employee_firstname,employee.employee_privillage,employee.employee_position,employee.employee_sale_limit,employee.company,employee.user)" style="overflow: auto;" v-if="employee.employee_firstname!='devtom'">
 
         <div class="container">
         <h4  class="my-0" v-cloak>  [[employee.employee_firstname]] </h4>
