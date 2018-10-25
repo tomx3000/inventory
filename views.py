@@ -81,7 +81,7 @@ def check_correct_uniqueness():
 @csrf_exempt
 @login_required(login_url='/login/')
 def getGraphBata(request, *args, **kwargs):
-	check_correct_uniqueness()
+	#check_correct_uniqueness()
 	print('graph')
 	days_dict={1:'Monday',2:'Tuesday',3:'Wednesday',4:'Thursday',5:'Friday',6:'Sartuday',7:'Sunday'}
 
