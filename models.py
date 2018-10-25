@@ -171,7 +171,7 @@ class Store(SoftDeleteModel):
 
 
 class Customer(SoftDeleteModel):
-	# adjusting customer name to unique name only
+	# adjusting customer name to ue name only
 	company=models.ForeignKey(Company,on_delete=models.CASCADE,null=True,blank=True)
 	customer_name=models.CharField(max_length=40,unique=True)
 	customer_transport=models.CharField(max_length=40,null=True,blank=True)
