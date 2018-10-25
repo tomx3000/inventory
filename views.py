@@ -22,7 +22,7 @@ privillage={'sales':3,'admin':1,'assistantadmin':2,'bursar':4,'godown':5}
 # hnishael@gmail.com
 
 import datetime
-from inventory.utils import render_to_pdf #created in step 4
+from inventory.utils import render_to_pdf ,render_to_pdf_with_image #created in step 4
 from django.template.loader import get_template
 from django.db.models import Sum
 from django.db.models import Q
@@ -80,8 +80,8 @@ def check_correct_uniqueness():
 
 @csrf_exempt
 @login_required(login_url='/login/')
-def getGraphBata(request, *args, **kwargs):
-	#check_correct_uniqueness()
+def getGraphBata(request, *args, **kargs):
+	# check_correct_uniqueness()
 	print('graph')
 	days_dict={1:'Monday',2:'Tuesday',3:'Wednesday',4:'Thursday',5:'Friday',6:'Sartuday',7:'Sunday'}
 
@@ -219,6 +219,7 @@ def OrderPdf_Auto(request, *args, **kwargs):
 	print(kwargs['id'])
 	template = get_template('inventory/pdforder.html')
 	context = {
+	"logo":"/static/inventory/oceanicpicjpg.png",
 	 "order_id": 123,
 	 "customer_name": "John Cooper",
 	 "amount": 1399.99,
@@ -229,8 +230,10 @@ def OrderPdf_Auto(request, *args, **kwargs):
 	 'employee':employee,
 	 'amount':'Tsh {:,.2f}'.format(total['sales_amount__sum']),
 	}
+
 	html = template.render(context)
-	pdf = render_to_pdf('inventory/pdforder.html', context)
+	pdf = render_to_pdf_with_image('inventory/pdforder.html', context)
+
 	if pdf:
 		response = HttpResponse(pdf, content_type='application/pdf')
 		filename = "{}_{}_Order.pdf".format(customer.customer_name,datetime.date.today())
